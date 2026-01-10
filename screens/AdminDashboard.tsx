@@ -976,21 +976,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
   };
 
   const handleDeleteProperty = async (id: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta propiedad? Esta acción no se puede deshacer.')) return;
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta propiedad? Esta acción eliminará permanentemente todos los registros asociados (solicitudes, eventos y pagos).')) return;
 
     try {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', id);
+      // Use RPC for safe, recursive delete
+      const { error } = await supabase.rpc('delete_property_by_admin', {
+        target_property_id: id
+      });
 
       if (error) throw error;
 
       onDeleteProperty(id);
-      success('Propiedad eliminada correctamente.');
+      success('Propiedad y datos asociados eliminados correctamente.');
     } catch (err: any) {
       console.error("Delete Error:", err);
-      error(`Error al eliminar: ${err.message || 'Error desconocido'}`);
+      // Detailed error for common FK issues if RPC fails or isn't installed
+      const msg = err.message || 'Error desconocido';
+      if (msg.includes('function delete_property_by_admin(uuid) does not exist')) {
+        error('Error: La función de eliminación no ha sido instalada en Supabase. Por favor, corre el script fix_property_deletion.sql en el SQL Editor.');
+      } else {
+        error(`Error al eliminar: ${msg}`);
+      }
     }
   };
 
