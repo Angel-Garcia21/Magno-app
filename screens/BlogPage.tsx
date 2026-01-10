@@ -39,7 +39,7 @@ const BlogPage: React.FC = () => {
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2">Noticias y tendencias del sector inmobiliario</p>
         </div>
         <button onClick={() => navigate('/')} className="transition-transform hover:scale-110 active:scale-95 shrink-0">
-          <img src="/assets/magno-logo.png" alt="Magno" className="w-16 h-16 object-contain brightness-75 dark:brightness-100" />
+          <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-12 h-12 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
         </button>
       </header>
 

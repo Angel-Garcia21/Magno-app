@@ -27,7 +27,7 @@ const PublicHome: React.FC<PublicHomeProps> = ({ properties }) => {
       <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#101622]/90 backdrop-blur-md px-6 py-2 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
         <button onClick={() => navigate('/')} className="hover:scale-105 transition-transform shrink-0">
           <img
-            src="/magno-logo.png"
+            src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png"
             alt="Magno Logo"
             className="w-12 h-12 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100"
           />

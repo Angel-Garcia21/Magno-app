@@ -242,7 +242,7 @@ const LoginPage: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-white dark:bg-primary/20 rounded-xl flex items-center justify-center border-2 border-primary/30 shadow-glow p-1.5">
-            <img src="/assets/magno-logo.png" alt="Magno" className="w-full h-full object-contain" />
+            <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-40 h-40 object-contain mx-auto mb-8 drop-shadow-2xl" />
           </div>
           <span className="text-sm font-black uppercase tracking-tighter text-slate-900 dark:text-white">Magno Identity</span>
         </div>

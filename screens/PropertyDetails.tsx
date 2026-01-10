@@ -252,7 +252,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary truncate px-4">{property.title}</p>
           <div className="absolute right-0 top-1/2 -translate-y-1/2">
             <button onClick={() => navigate('/')} className="transition-transform hover:scale-110 active:scale-95">
-              <img src="/assets/magno-logo.png" alt="Magno" className="w-10 h-10 object-contain brightness-75 dark:brightness-100" />
+              <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-12 h-12 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
             </button>
           </div>
         </div>

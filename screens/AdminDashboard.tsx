@@ -1618,7 +1618,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
             onClick={() => navigate('/')}
             className="w-14 h-14 bg-white/10 backdrop-blur-xl border border-primary/30 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/20 p-2 shrink-0 hover:scale-110 active:scale-95 transition-all"
           >
-            <img src="/assets/magno-logo.png" alt="Magno" className="w-full h-full object-contain" />
+            <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="h-12 w-auto object-contain" />
           </button>
           {!isSidebarCollapsed && (
             <div className="animate-in fade-in slide-in-from-left-4 duration-500">
@@ -1803,7 +1803,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
             {properties.map(p => (
               <div key={p.id} className="relative bg-white dark:bg-slate-900 p-6 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-[0_15px_45px_rgba(0,0,0,0.05)] flex items-center gap-8 group hover:shadow-[0_25px_60px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-hidden">
                 <div className="relative w-40 h-40 rounded-[2.2rem] overflow-hidden flex-shrink-0">
-                  <img src={p.mainImage || (p.images && p.images[0]) || '/assets/magno-logo.png'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                  <img src={p.mainImage || (p.images && p.images[0]) || 'https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-md rounded-full">
                     <p className="text-[8px] font-black text-slate-900 uppercase tracking-widest">{p.ref}</p>

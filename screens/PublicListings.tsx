@@ -51,7 +51,7 @@ const PublicListings: React.FC<PublicListingsProps> = ({ properties }) => {
           </div>
 
           <button onClick={() => navigate('/')} className="transition-transform hover:scale-110 active:scale-95">
-            <img src="/assets/magno-logo.png" alt="Magno" className="w-10 h-10 object-contain brightness-75 dark:brightness-100" />
+            <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-16 h-16 object-contain" />
           </button>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center max-w-3xl mx-auto sm:mx-0">

@@ -42,7 +42,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({ activeView, onViewChange,
                             onClick={() => window.location.href = '/'}
                             className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
                         >
-                            <img src="/assets/magno-logo.png" alt="Magno" className="w-5 h-5 object-contain" />
+                            <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno" className="w-10 h-10 object-contain" />
                         </button>
                         <span className="font-extrabold text-lg tracking-tight uppercase text-slate-900 dark:text-white">Panel Magno</span>
                     </div>

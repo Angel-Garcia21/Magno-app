@@ -157,12 +157,12 @@ const KeyReceiptPDF: React.FC<KeyReceiptPDFProps> = ({ data }) => {
         <Document>
             <Page size="A4" style={styles.page}>
                 <View style={styles.sidebarBlue} />
-                <Image src={window.location.origin + "/assets/magno-logo.png"} style={styles.watermark} />
+                <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.watermark} />
 
                 <View style={styles.contentWrapper}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Image src={window.location.origin + "/assets/magno-logo.png"} style={styles.logo} />
+                        <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.logo} />
                         <View style={{ marginLeft: 10 }}>
                             <Text style={styles.firmaText}>FIRMA</Text>
                             <Text style={styles.headerTitle}>Responsiva de Llaves</Text>
