@@ -1,0 +1,250 @@
+
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Property, TimelineEvent, User } from './types';
+import { ALL_PROPERTIES, INITIAL_TIMELINE } from './constants';
+import Navigation from './components/Navigation';
+import PublicHome from './screens/PublicHome';
+import PublicListings from './screens/PublicListings';
+import BlogPage from './screens/BlogPage';
+import LoginPage from './screens/LoginPage';
+import Dashboard from './screens/Dashboard';
+import Timeline from './screens/Timeline';
+import ChatAdvisor from './screens/ChatAdvisor';
+import AppraisalForm from './screens/AppraisalForm';
+import BlogPostDetails from './screens/BlogPostDetails';
+import PropertyRegister from './screens/PropertyRegister';
+import PropertyDetails from './screens/PropertyDetails';
+import AdminDashboard from './screens/AdminDashboard';
+import PropertySubmission from './screens/PropertySubmission';
+import PropertySubmissionSale from './screens/PropertySubmissionSale';
+import ClientPortal from './screens/ClientPortal';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
+import { supabase } from './services/supabaseClient';
+
+// Wrapper component to handle dynamic property lookup
+const PropertyDetailsWrapper: React.FC<{ properties: Property[] }> = ({ properties }) => {
+  const { id } = useParams<{ id: string }>();
+  const property = properties.find(p => p.id === id) || properties[0];
+  return <PropertyDetails property={property} />;
+};
+
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactElement, allowedRoles?: string[] }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/dashboard" />;
+
+  return children;
+};
+
+const AppContent: React.FC = () => {
+  const { user, signOut } = useAuth();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>(INITIAL_TIMELINE);
+  const [loadingData, setLoadingData] = useState(true);
+
+  // Fetch initial data
+  useEffect(() => {
+    const fetchData = async () => {
+      // 1. Fetch Properties
+      const { data: propsData, error: propsError } = await supabase
+        .from('properties')
+        .select('*');
+
+      if (propsError) console.error('Error fetching properties:', propsError);
+
+      let publicProps: Property[] = [];
+      if (propsData && propsData.length > 0) {
+        publicProps = propsData.map((p: any) => ({
+          ...p,
+          ownerId: p.owner_id,
+          tenantId: p.tenant_id,
+          mainImage: p.main_image,
+          images: p.images || [],
+          isFeatured: p.is_featured || (p.specs && p.specs.isFeatured) || false,
+          specs: {
+            beds: 0, baths: 0, area: 0, landArea: 0, levels: 1, age: 0,
+            ...(p.specs || {})
+          },
+          features: p.features || [],
+          services: p.services || [],
+          amenities: p.amenities || [],
+          documents: [],
+          status: p.status || 'available',
+          type: p.type || 'sale',
+          maintenanceFee: p.maintenance_fee || 0,
+          accessCode: p.ref || '0000'
+        }));
+      } else {
+        publicProps = ALL_PROPERTIES;
+      }
+
+      // 2. Fetch All Profiles (for Admin)
+      if (user?.role === 'admin') {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*');
+
+        if (profilesError) console.error('Error fetching profiles:', profilesError);
+
+        if (profilesData) {
+          const mappedUsers: User[] = profilesData.map((u: any) => ({
+            id: u.id,
+            email: u.email,
+            name: u.full_name,
+            role: u.role,
+            propertyCode: u.property_code,
+            depositDay: u.deposit_day,
+            monthlyAmount: u.monthly_amount,
+            contractEndDate: u.contract_end_date,
+            contractStartDate: u.contract_start_date,
+            propertyTitle: u.property_title,
+            propertyAddress: u.property_address,
+            linkedName: u.linked_name,
+            phoneContact: u.phone_contact,
+            password: u.password,
+            vouchers: u.vouchers || []
+          }));
+          setUsers(mappedUsers);
+        }
+      }
+
+      // 3. Fetch Internal Properties
+      const { data: internalData, error: internalError } = await supabase
+        .from('internal_properties')
+        .select('*');
+
+      if (internalError) console.error('Error fetching internal properties:', internalError);
+
+      const mappedInternal: Property[] = (internalData || []).map((p: any) => ({
+        ...p,
+        ownerId: p.owner_id,
+        tenantId: p.tenant_id,
+        mainImage: undefined,
+        images: [],
+        specs: { beds: 0, baths: 0, area: 0, landArea: 0, levels: 1, age: 0 },
+        features: [],
+        services: [],
+        amenities: [],
+        documents: [],
+        status: p.status || 'rented',
+        type: 'rent',
+        maintenanceFee: 0,
+        accessCode: p.ref || '0000',
+        isInternal: true
+      }));
+
+      setProperties([...publicProps, ...mappedInternal]);
+      setLoadingData(false);
+    };
+
+    fetchData();
+  }, [user]);
+
+  const handlePropertyUpdate = (updatedProp: Property) => {
+    setProperties(prev => prev.map(p => p.id === updatedProp.id ? updatedProp : p));
+  };
+
+  const handleAddProperty = (newProp: Property) => {
+    setProperties(prev => [newProp, ...prev]);
+  };
+
+  const handlePropertyDelete = (id: string) => {
+    setProperties(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleUsersUpdate = (updatedUsers: User[]) => {
+    setUsers(updatedUsers);
+  };
+
+  // Find the user's property with improved logic
+  const userProperty = properties.find(p => {
+    // Priority 1: Direct property_id link (Public only)
+    if (user?.propertyId && p.id === user.propertyId) {
+      return true;
+    }
+    // Priority 2: Match property_code with property ref (Works for both)
+    if (user?.propertyCode && p.ref === user.propertyCode) {
+      return true;
+    }
+    // Priority 3: Check ownership/tenancy (Works for both)
+    return p.ownerId === user?.id || p.tenantId === user?.id;
+  }) || properties[0]; // Fallback to first property if no match
+
+  return (
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+      <Routes>
+        <Route path="/" element={<PublicHome properties={properties} />} />
+        <Route path="/listings" element={<PublicListings properties={properties} />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostDetails />} />
+        <Route path="/appraise" element={<AppraisalForm />} />
+        <Route path="/register-property" element={<PropertyRegister onComplete={handleAddProperty} />} />
+
+        {/* New Flow: Direct Access for Guests */}
+        <Route path="/vender" element={<PropertySubmission mode="sale" />} />
+        <Route path="/rentar" element={<PropertySubmission mode="rent" />} />
+
+        <Route path="/client-portal" element={<ClientPortal />} />
+
+        <Route path="/property/:id" element={<PropertyDetailsWrapper properties={properties} />} />
+
+        <Route path="/login" element={
+          user ? (
+            user.role === 'admin' ? <Navigate to="/admin" /> :
+              user.role === 'owner' ? <Navigate to="/client-portal" /> :
+                <Navigate to="/dashboard" />
+          ) : <LoginPage />
+        } />
+
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            {user?.role === 'admin' ? <Navigate to="/admin" /> : <Dashboard user={user!} property={userProperty} />}
+          </ProtectedRoute>
+        } />
+
+        <Route path="/timeline" element={
+          <ProtectedRoute>
+            <Timeline property={userProperty} timeline={timeline} setTimeline={setTimeline} canEdit={user?.role === 'admin'} />
+          </ProtectedRoute>
+        } />
+
+
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard
+              properties={properties}
+              onPropertyUpdate={handlePropertyUpdate}
+              onAddProperty={handleAddProperty}
+              onDeleteProperty={handlePropertyDelete}
+              users={users}
+              onUsersUpdate={handleUsersUpdate}
+            />
+          </ProtectedRoute>
+        } />
+      </Routes>
+      <Navigation user={user} onLogout={signOut} />
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+};
+
+export default App;
