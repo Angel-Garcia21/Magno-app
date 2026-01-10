@@ -21,6 +21,16 @@
     <script>
         window.Buffer = window.Buffer || buffer.Buffer;
         window.global = window;
+
+        // Theme Debugger
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    console.log('[Magno Theme] html class changed to:', document.documentElement.className);
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
     </script>
 </head>
 
