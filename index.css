@@ -1,5 +1,35 @@
 @import "tailwindcss";
 
+@theme {
+    --color-primary: #0d59f2;
+    --color-secondary: #f59e0b;
+    --color-header-dark: #0a1628;
+    --color-background-light: #F8FAFC;
+    --color-background-dark: #0a1628;
+    --color-surface-light: #FFFFFF;
+    --color-surface-dark: #0f1b2e;
+    --color-text-light: #1F2937;
+    --color-text-dark: #F1F5F9;
+    --color-subtext-light: #6B7280;
+    --color-subtext-dark: #94A3B8;
+    --color-input-light: #f8fafc;
+    --color-input-dark: #1e293b;
+    --color-border-light: #e5e7eb;
+    --color-border-dark: #1e293b;
+
+    --font-display: "Tramillas", "Poppins", sans-serif;
+    --font-body: "Poppins", sans-serif;
+    --font-sans: "Poppins", sans-serif;
+
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-3xl: 2rem;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --shadow-glow: 0 4px 20px -2px rgba(13, 89, 242, 0.2);
+}
+
+
 body {
     font-family: 'Poppins', sans-serif;
     -webkit-tap-highlight-color: transparent;
