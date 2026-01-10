@@ -21,6 +21,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!supabase) {
+            setLoading(false);
+            return;
+        }
+
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             if (session) fetchUserProfile(session.user.id, session.user.email!);
@@ -105,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signOut = async () => {
+        if (!supabase) return;
         await supabase.auth.signOut();
     };
 

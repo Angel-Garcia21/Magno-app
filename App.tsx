@@ -51,6 +51,12 @@ const AppContent: React.FC = () => {
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
+      // Guard for missing supabase
+      if (!supabase) {
+        setLoadingData(false);
+        return;
+      }
+
       // 1. Fetch Properties
       const { data: propsData, error: propsError } = await supabase
         .from('properties')
@@ -175,6 +181,30 @@ const AppContent: React.FC = () => {
     // Priority 3: Check ownership/tenancy (Works for both)
     return p.ownerId === user?.id || p.tenantId === user?.id;
   }) || properties[0]; // Fallback to first property if no match
+
+  if (!supabase) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white p-8 text-center">
+        <div className="w-20 h-20 bg-red-500/20 rounded-3xl flex items-center justify-center mb-8 border border-red-500/50">
+          <span className="material-symbols-outlined text-4xl text-red-500">warning</span>
+        </div>
+        <h1 className="text-3xl font-black uppercase tracking-tighter mb-4">Configuración Pendiente</h1>
+        <p className="text-slate-400 max-w-md mb-8 leading-relaxed">
+          No se detectaron las variables de entorno de Supabase. Esto sucede usualmente cuando el proyecto se publica en Vercel pero no se han configurado los secretos.
+        </p>
+        <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 text-left w-full max-w-md mb-8">
+          <p className="text-[10px] font-black uppercase text-primary mb-2">Pasos para corregir:</p>
+          <ol className="text-xs text-slate-300 space-y-2 list-decimal list-inside">
+            <li>Ve a tu proyecto en el dashboard de <span className="font-bold text-white">Vercel</span>.</li>
+            <li>Entra en <span className="font-bold text-white">Settings</span> &gt; <span className="font-bold text-white">Environment Variables</span>.</li>
+            <li>Agrega <code className="bg-slate-700 px-1 rounded text-primary">VITE_SUPABASE_URL</code></li>
+            <li>Agrega <code className="bg-slate-700 px-1 rounded text-primary">VITE_SUPABASE_ANON_KEY</code></li>
+            <li>Haz un nuevo <span className="font-bold text-white">Redeploy</span>.</li>
+          </ol>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
