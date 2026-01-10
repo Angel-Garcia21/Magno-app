@@ -87,7 +87,7 @@ const LoginPage: React.FC = () => {
       googleInitialized.current = true;
 
       (window as any).google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '179506123940-9ub8jntdqf0qh6fg7ivgk047pm70dk5i.apps.googleusercontent.com',
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '165560193010-h8nq36dcvagelie8jda1fcq1kf05kb6b.apps.googleusercontent.com',
         callback: handleGoogleResponse,
         use_fedcm_for_prompt: true, // Opt-in to FedCM per Google warnings
       });
