@@ -2,10 +2,6 @@
 
 @custom-variant dark (&:is(.dark, .dark *));
 
-@theme {
-    --dark-mode: selector;
-}
-
 
 @theme {
     --color-primary: #0d59f2;

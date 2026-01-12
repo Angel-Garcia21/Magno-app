@@ -27,8 +27,22 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
     navigate('/');
   };
 
-  // Theme Toggle Button (Permanently hidden per user request for now)
-  const ThemeToggleButton = () => null;
+  // Theme Toggle Button
+  const ThemeToggleButton = () => (
+    <button
+      onClick={toggleTheme}
+      className="fixed top-6 right-6 z-[100] w-12 h-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-2xl shadow-2xl hover:shadow-primary/20 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group"
+      aria-label="Toggle theme"
+    >
+      <div className="relative w-6 h-6">
+        {theme === 'light' ? (
+          <span className="material-symbols-outlined text-amber-500 absolute inset-0 animate-in zoom-in spin-in-90 duration-500">light_mode</span>
+        ) : (
+          <span className="material-symbols-outlined text-blue-400 absolute inset-0 animate-in zoom-in spin-in-90 duration-500">dark_mode</span>
+        )}
+      </div>
+    </button>
+  );
 
   // 2. Rutas que no deben mostrar navegación inferior
   const hideNavPaths = ['/register-property', '/login', '/appraise'];
