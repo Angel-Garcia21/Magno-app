@@ -20,11 +20,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     useEffect(() => {
         // Apply or remove 'dark' class on the <html> element
         const root = document.documentElement;
+        console.log('[Magno Theme] Applying theme:', theme);
+        console.log('[Magno Theme] HTML classes before:', root.className);
+
         if (theme === 'dark') {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
+
+        console.log('[Magno Theme] HTML classes after:', root.className);
 
         // Save theme preference to localStorage
         localStorage.setItem('magno-theme', theme);
