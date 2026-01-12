@@ -29,11 +29,23 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
     // We take the first property to show
     // For lists, this component might need adapting, but for Details view (main use case) it works perfectly.
     const property = properties[0];
-    const addressToQuery = property.fullAddress || property.address || 'Monterrey, Nuevo León';
 
-    // Construct Google Maps Embed URL
+    // Build the most specific address possible
+    let addressToQuery = '';
+    if (property.fullAddress && property.fullAddress.trim()) {
+        addressToQuery = property.fullAddress;
+    } else if (property.address && property.address.trim()) {
+        addressToQuery = property.address;
+    } else if (property.title) {
+        // Last resort: use title which often contains location info
+        addressToQuery = property.title + ', Monterrey, Nuevo León';
+    } else {
+        addressToQuery = 'Monterrey, Nuevo León';
+    }
+
+    // Construct Google Maps Embed URL with zoom parameter
     const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-    const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(addressToQuery)}&language=es`;
+    const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(addressToQuery)}&zoom=15&language=es`;
 
     return (
         <div
