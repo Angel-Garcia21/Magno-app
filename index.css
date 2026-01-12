@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
+/* Tailwind v4 - Handle Dark Mode with .dark class */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+    /* Base Colors Mapping */
     --color-primary: #0d59f2;
     --color-secondary: #f59e0b;
     --color-header-dark: #0a1628;
+
+    /* Semantic Colors */
     --color-background-light: #F8FAFC;
     --color-background-dark: #0a1628;
     --color-surface-light: #FFFFFF;
@@ -18,25 +23,42 @@
     --color-border-light: #e5e7eb;
     --color-border-dark: #1e293b;
 
+    /* Fonts */
     --font-display: "Tramillas", "Poppins", sans-serif;
     --font-body: "Poppins", sans-serif;
     --font-sans: "Poppins", sans-serif;
 
+    /* Radius */
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
     --radius-3xl: 2rem;
 
+    /* Shadows */
     --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
     --shadow-glow: 0 4px 20px -2px rgba(13, 89, 242, 0.2);
 }
 
+/* Global Styles */
+@layer base {
+    :root {
+        --bg-current: var(--color-background-light);
+        --text-current: var(--color-text-light);
+    }
 
-body {
-    font-family: 'Poppins', sans-serif;
-    -webkit-tap-highlight-color: transparent;
-    @apply antialiased;
-    scroll-behavior: smooth;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    :root.dark {
+        --bg-current: var(--color-background-dark);
+        --text-current: var(--color-text-dark);
+    }
+
+    body {
+        background-color: var(--bg-current);
+        color: var(--text-current);
+        font-family: 'Poppins', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        @apply antialiased;
+        scroll-behavior: smooth;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
 }
 
 /* Custom Premium Scrollbar */

@@ -206,6 +206,15 @@ const AppContent: React.FC = () => {
     );
   }
 
+  if (loadingData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500 font-medium">Cargando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
       <Routes>

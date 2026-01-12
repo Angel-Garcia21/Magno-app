@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- Magno Ver: 1.0.1 -->
+<!-- Magno Ver: 1.0.2 -->
 
 <head>
     <meta charset="utf-8" />
@@ -17,9 +17,16 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         rel="stylesheet" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Buffer Polyfill for PDF generation (loaded asynchronously) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js" async></script>
+
+    <!-- Buffer Polyfill for PDF generation (MUST load before app) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
     <script>
+        // Critical Polyfills for libraries like @react-pdf/renderer
+        window.global = window;
+        if (window.buffer && !window.Buffer) {
+            window.Buffer = window.buffer.Buffer;
+        }
+
         // Theme Debugger
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
