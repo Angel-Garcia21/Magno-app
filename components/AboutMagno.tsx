@@ -127,7 +127,7 @@ const AboutMagno: React.FC = () => {
                                     <div className="relative w-32 h-32 flex items-center justify-center">
                                         <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-2xl animate-pulse" />
                                         <img
-                                            src="/assets/magno-logo.png"
+                                            src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png"
                                             alt="Magno Logo"
                                             className="w-full h-full object-contain brightness-0 dark:brightness-100 group-hover:scale-110 transition-transform duration-700"
                                         />
