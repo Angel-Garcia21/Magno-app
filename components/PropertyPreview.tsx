@@ -49,10 +49,18 @@ const PropertyPreview: React.FC<PropertyPreviewProps> = ({ formData, mode, onEdi
                     </div>
 
                     <div className="py-8 border-y border-slate-100 dark:border-white/5">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Inversión Propuesta</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                            {mode === 'sale' ? 'Inversión Propuesta' : 'Total Mensual Estimado'}
+                        </p>
                         <div className="flex flex-wrap items-baseline gap-3">
-                            <p className="text-6xl font-black text-primary tracking-tighter">${parseFloat(formData.price || '0').toLocaleString()}</p>
-                            {formData.maintenance_fee && <span className="text-xs font-bold text-slate-400">+ ${parseFloat(formData.maintenance_fee).toLocaleString()} Mant.</span>}
+                            <p className="text-4xl sm:text-6xl font-black text-primary tracking-tighter">
+                                ${(parseFloat(formData.price || '0') + (mode === 'rent' ? parseFloat(formData.maintenance_fee || '0') : 0)).toLocaleString()}
+                            </p>
+                            {mode === 'rent' && formData.maintenance_fee && parseFloat(formData.maintenance_fee) > 0 && (
+                                <span className="text-xs font-bold text-slate-400">
+                                    incl. ${parseFloat(formData.maintenance_fee).toLocaleString()} mant.
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -103,7 +111,7 @@ const PropertyPreview: React.FC<PropertyPreviewProps> = ({ formData, mode, onEdi
             </div>
 
             <div className="space-y-10">
-                <div className="bg-white dark:bg-slate-900 border border-slate-50 dark:border-white/5 rounded-[3rem] p-10 sm:p-14 shadow-xl">
+                <div className="bg-white dark:bg-slate-900 border border-slate-50 dark:border-white/5 rounded-3xl sm:rounded-[3rem] p-6 sm:p-10 sm:p-14 shadow-xl">
                     <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-primary mb-10">Descripción Detallada</h2>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                         {formData.description ? formData.description : <span className="text-slate-400 italic">EN CUANTO REVISEMOS TU PROPIEDAD NOSOTROS PONDREMOS LA DESCRIPCIÓN</span>}
@@ -137,7 +145,7 @@ const PropertyPreview: React.FC<PropertyPreviewProps> = ({ formData, mode, onEdi
                 {termsContent}
 
                 {onConfirm && (
-                    <div className="bg-slate-900 border border-white/10 p-10 sm:p-16 rounded-[4rem] space-y-12 shadow-3xl relative overflow-hidden">
+                    <div className="bg-slate-900 border border-white/10 p-8 sm:p-10 sm:p-16 rounded-3xl sm:rounded-[4rem] space-y-12 shadow-3xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2" />
                         <div className="relative z-10 text-center space-y-3">
                             <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Confirmación Final</h3>

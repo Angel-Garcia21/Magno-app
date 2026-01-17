@@ -19,7 +19,8 @@
     "jspdf": "^3.0.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^7.11.0"
+    "react-router-dom": "^7.11.0",
+    "react-signature-canvas": "^1.1.0-alpha.2"
   },
   "devDependencies": {
     "@tailwindcss/container-queries": "^0.1.1",

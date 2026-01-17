@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 20,
-        gap: 20,
-        position: 'relative'
+        gap: 20
     },
     logo: {
         width: 60,
@@ -71,16 +71,19 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5
     },
     folioContainer: {
-        position: 'absolute',
-        right: 50,
-        top: 60,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        backgroundColor: '#f8fafc',
+        borderRadius: 4,
+        border: '1pt solid #e2e8f0'
     },
     folioText: {
-        fontSize: 10,
+        fontSize: 16,
         fontWeight: 900,
-        color: '#1e293b'
+        color: '#1e293b',
+        letterSpacing: 0.5
     },
     section: {
         marginTop: 15,
@@ -102,8 +105,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 9,
         fontWeight: 400,
-        color: '#1e293b',
-        width: '35%'
+        color: '#1e293b'
     },
     value: {
         fontSize: 9,
@@ -196,7 +198,10 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
 
     const contactEmail = data.contact_email || data.email || '';
     const contactPhone = data.contact_phone || data.phone || '';
-    const ownerName = data.ownerName || data.contact_name || '';
+    const ownerName = data.ownerName ||
+        (data.contact_first_names && data.contact_last_names
+            ? `${data.contact_first_names} ${data.contact_last_names}`
+            : data.contact_name) || '';
 
     // Robust extraction fallback
     const occupancyStatus = data.occupancy_status || data.form_data?.occupancy_status || '';
@@ -213,14 +218,15 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
 
                 <View style={styles.contentWrapper}>
                     <View style={styles.header}>
-                        <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.logo} />
-                        <View style={{ marginLeft: 10 }}>
-                            <Text style={styles.firmaText}>FIRMA</Text>
-                            <Text style={[styles.headerTitle, { fontWeight: 900 }]}>
-                                {mode === 'rent' ? 'FORMATO INTEGRAL PARA EL MANEJO DE ARRENDAMIENTO' : 'FORMATO INTEGRAL PARA EL MANEJO DE VENTA'}
-                            </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.logo} />
+                            <View style={{ marginLeft: 10, flex: 1 }}>
+                                <Text style={styles.firmaText}>FIRMA</Text>
+                                <Text style={[styles.headerTitle, { fontWeight: 900 }]}>
+                                    {mode === 'rent' ? 'FORMATO INTEGRAL PARA EL MANEJO DE ARRENDAMIENTO' : 'FORMATO INTEGRAL PARA EL MANEJO DE VENTA'}
+                                </Text>
+                            </View>
                         </View>
-
                         <View style={styles.folioContainer}>
                             <Text style={styles.folioText}>FOLIO: {data.ref || data.folio || 'PENDIENTE'}</Text>
                         </View>
@@ -229,19 +235,19 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
                     <View style={{ marginTop: 20 }}>
                         <FormSection title="INFORMACIÓN DEL PROPIETARIO">
                             <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                <Text style={styles.label}>Nombre completo:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Nombre completo:</Text>
                                 <Text style={styles.value}>{ownerName}</Text>
                             </View>
                             <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                <Text style={styles.label}>Correo electrónico:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Correo electrónico:</Text>
                                 <Text style={styles.value}>{contactEmail}</Text>
                             </View>
                             <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                <Text style={styles.label}>Teléfono:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Teléfono:</Text>
                                 <Text style={styles.value}>{contactPhone}</Text>
                             </View>
                             <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                <Text style={styles.label}>Ubicación escrita del inmueble:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Ubicación:</Text>
                                 <Text style={styles.value}>{data.address || ''}</Text>
                             </View>
                         </FormSection>
@@ -249,11 +255,11 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
                         <View style={{ marginTop: 40 }}>
                             <FormSection title="INFORMACIÓN DE LA PROPIEDAD">
                                 <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                    <Text style={styles.label}>Estado general del inmueble:</Text>
+                                    <Text style={[styles.label, { width: '35%' }]}>Estado general:</Text>
                                     <Text style={styles.value}>{occupancyStatus}</Text>
                                 </View>
                                 <View style={[styles.fieldRow, { marginBottom: 15 }]}>
-                                    <Text style={styles.label}>Antigüedad aproximada:</Text>
+                                    <Text style={[styles.label, { width: '35%' }]}>Antigüedad:</Text>
                                     <Text style={styles.value}>{(ageStatus === 'Años' || ageStatus === 'Años de antigüedad') ? `${ageYears} años` : (ageStatus || '')}</Text>
                                 </View>
                             </FormSection>
@@ -275,10 +281,12 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
 
                 <View style={styles.contentWrapper}>
                     <View style={styles.header}>
-                        <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.logo} />
-                        <View style={{ marginLeft: 10 }}>
-                            <Text style={styles.firmaText}>FIRMA</Text>
-                            <Text style={styles.headerTitle}>ESPECIFICACIONES Y AUTORIZACIÓN LEGAL</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <Image src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" style={styles.logo} />
+                            <View style={{ marginLeft: 10, flex: 1 }}>
+                                <Text style={styles.firmaText}>FIRMA</Text>
+                                <Text style={styles.headerTitle}>ESPECIFICACIONES Y AUTORIZACIÓN LEGAL</Text>
+                            </View>
                         </View>
                         <View style={styles.folioContainer}>
                             <Text style={styles.folioText}>FOLIO: {data.ref || data.folio || 'PENDIENTE'}</Text>
@@ -313,7 +321,7 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
                             </View>
                         </View>
                         <View style={[styles.fieldRow, { marginTop: 10 }]}>
-                            <Text style={styles.label}>Mobiliario:</Text>
+                            <Text style={[styles.label, { width: '35%' }]}>Mobiliario:</Text>
                             <Text style={styles.value}>
                                 {data.mobiliario && data.mobiliario.length > 0 ? data.mobiliario.join(', ') : 'Ninguno especificado'}
                             </Text>
@@ -322,7 +330,7 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
                             <Text style={styles.value}>${data.maintenance_fee ? parseFloat(data.maintenance_fee).toLocaleString('es-MX') : '0.00'}</Text>
                         </View>
                         <View style={[styles.fieldRow, { marginTop: 10 }]}>
-                            <Text style={styles.label}>¿Tiene gravamen?:</Text>
+                            <Text style={[styles.label, { width: '35%' }]}>¿Tiene gravamen?:</Text>
                             <Text style={styles.value}>{isFreeOfEncumbrance !== undefined ? (isFreeOfEncumbrance ? 'No' : 'Sí') : ''}</Text>
                         </View>
                     </FormSection>
@@ -336,19 +344,23 @@ const RecruitmentPDF: React.FC<RecruitmentPDFProps> = ({ data, mode }) => {
 
                         <View style={{ marginTop: 15 }}>
                             <View style={styles.fieldRow}>
-                                <Text style={styles.label}>Nombre del propietario:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Propietario:</Text>
                                 <Text style={styles.value}>{ownerName}</Text>
                             </View>
                             <View style={styles.fieldRow}>
-                                <Text style={styles.label}>Fecha:</Text>
+                                <Text style={[styles.label, { width: '35%' }]}>Fecha:</Text>
                                 <Text style={styles.value}>{date}</Text>
                             </View>
                         </View>
 
                         <View style={styles.signSection}>
                             <View style={styles.signBox}>
-                                <View style={{ borderBottom: '1pt solid #000', height: 40, width: '100%' }} />
-                                <Text style={[styles.label, { marginTop: 5 }]}>Firma del {mode === 'rent' ? 'arrendador' : 'vendedor'}</Text>
+                                {data.signatureUrl ? (
+                                    <Image src={data.signatureUrl} style={{ height: 40, width: 150, objectFit: 'contain', marginBottom: -10 }} />
+                                ) : (
+                                    <View style={{ borderBottom: '1pt solid #000', height: 40, width: '100%' }} />
+                                )}
+                                <Text style={[styles.label, { marginTop: 5, width: '100%' }]}>Firma del propietario</Text>
                             </View>
                             <View style={{ width: '45%' }}>
                                 <Text style={[styles.sectionTitle, { fontSize: 8 }]}>AVISO DE PRIVACIDAD</Text>

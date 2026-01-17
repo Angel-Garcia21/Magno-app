@@ -206,12 +206,18 @@ const KeyReceiptPDF: React.FC<KeyReceiptPDFProps> = ({ data }) => {
                     </View>
 
                     {/* Signatures */}
-                    <View style={styles.signatureSection}>
-                        <Text style={[styles.label, { marginBottom: 60, fontSize: 10 }]}>Atentamente</Text>
-                        <View style={styles.signatureLine} />
-                        <Text style={styles.signatureName}>ALEJANDRO RIVAS GIRON</Text>
-                        <Text style={styles.signatureRole}>Director de Operaciones</Text>
-                        <Text style={[styles.signatureRole, { fontSize: 8 }]}>MAGNO GRUPO INMOBILIARIO</Text>
+                    <View style={[styles.signatureSection, { marginTop: 40, alignItems: 'center' }]}>
+                        {/* Agency Signature (The responsible party) */}
+                        <View style={{ alignItems: 'center', width: '100%' }}>
+                            <Image
+                                src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768424189/Firma_-_Alejandro_s5jduv.png"
+                                style={{ height: 60, width: 200, objectFit: 'contain', marginBottom: 5 }}
+                            />
+                            <View style={{ width: 200, borderBottom: '1.5pt solid #0026e3', marginBottom: 10 }} />
+                            <Text style={[styles.signatureName, { fontSize: 10 }]}>ALEJANDRO RIVAS GIRON</Text>
+                            <Text style={styles.signatureRole}>Director de Operaciones</Text>
+                            <Text style={[styles.signatureRole, { fontSize: 8 }]}>MAGNO GRUPO INMOBILIARIO</Text>
+                        </View>
                     </View>
                 </View>
 

@@ -95,7 +95,7 @@ const PublicHome: React.FC<PublicHomeProps> = ({ properties }) => {
                 <span className="material-symbols-outlined text-xl sm:text-2xl">analytics</span>
               </div>
               <div>
-                <h2 className="text-[11px] sm:text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">Avaluar mi inmueble</h2>
+                <h2 className="text-[11px] sm:text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">Valuar mi inmueble</h2>
                 <p className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase tracking-widest mt-1">Estimación Digital</p>
               </div>
             </button>
@@ -190,7 +190,7 @@ const PublicHome: React.FC<PublicHomeProps> = ({ properties }) => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
             {/* We'll need to fetch these or pass them from App.tsx. For now, let's assume we fetch them here for modularity */}
             <BlogHighlights navigate={navigate} />
           </div>

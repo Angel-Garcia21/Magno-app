@@ -26,6 +26,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [voucherFile, setVoucherFile] = useState<File | null>(null);
   const [voucherMonth, setVoucherMonth] = useState('');
+  const [voucherType, setVoucherType] = useState<'Retiro sin tarjeta' | 'Transferencia' | ''>('');
+
 
   // Data State
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
@@ -204,10 +206,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
   };
 
   const submitVoucher = async () => {
-    if (!voucherFile || !voucherMonth) {
-      error('Selecciona un mes y un archivo.');
+    if (!voucherFile || !voucherMonth || !voucherType) {
+      error('Selecciona un mes, tipo de pago y un archivo.');
       return;
     }
+
 
     setUploading(true);
     try {
@@ -242,8 +245,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
           month_year: voucherMonth,
           amount: user.monthlyAmount,
           proof_url: publicUrl,
-          status: 'pending'
+          status: 'pending',
+          payment_type: voucherType
         });
+
 
       if (dbError) throw dbError;
 
@@ -251,6 +256,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
       setShowVoucherModal(false);
       setVoucherFile(null);
       setVoucherMonth('');
+      setVoucherType('');
+
 
       // Update local state instead of reload
       const newPayment: PaymentProof = {
@@ -458,6 +465,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
     }
   };
 
+  if (user?.role === 'owner') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-8"></div>
+        <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest animate-pulse">
+          Redirigiendo al Portal de Clientes...
+        </p>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-8 border border-primary/20">
+          <span className="material-symbols-outlined text-4xl text-primary">pending_actions</span>
+        </div>
+        <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-4">Panel Inactivo</h1>
+        <p className="text-slate-500 max-w-sm mb-8 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
+          No tienes una propiedad activa asignada. Si eres propietario, por favor dirígete al Portal de Clientes.
+        </p>
+        <button
+          onClick={() => navigate('/client-portal')}
+          className="px-8 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-glow shadow-primary/20"
+        >
+          Ir al Portal de Clientes
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 pb-24 selection:bg-primary/30">
       {/* HUD Header */}
@@ -515,35 +553,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
         </div>
 
         {/* Data Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-          {/* Linked Contact Card */}
-          <div className="md:col-span-2 bg-white dark:bg-slate-900/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-8 border border-slate-200 dark:border-white/5 flex items-center gap-5 sm:gap-8 relative overflow-hidden">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-white/10 shrink-0 shadow-inner">
-              <span className="material-symbols-outlined text-3xl sm:text-4xl text-slate-400 dark:text-slate-500">{isOwner ? 'groups' : 'shield_person'}</span>
-            </div>
-            <div className="relative z-10 w-full">
-              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary mb-1.5 sm:mb-2">{isOwner ? 'Identidad Inquilino' : 'Identidad Propietario'}</p>
-              <h3 id="linked-name" className="text-xl sm:text-2xl font-extrabold uppercase tracking-tighter mb-1 line-clamp-1 text-slate-900 dark:text-white">{user.linkedName || 'Sin asignar'}</h3>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{user.phoneContact || 'Contacto no disponible'}</p>
-            </div>
-
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 sm:gap-6 mb-8 sm:mb-12">
           {/* Payment Cycle Card */}
-          <div className="bg-primary shadow-glow shadow-primary/20 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden border border-white/10 min-h-[160px] sm:min-h-0">
-            <div className="relative z-10">
+          <div className="bg-primary shadow-glow shadow-primary/20 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-8 flex flex-col justify-center relative overflow-hidden border border-white/10 min-h-[160px] sm:min-h-[200px]">
+            <div className="relative z-10 text-center">
               <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Día de Pago</p>
-              <p className="text-3xl sm:text-4xl font-black text-white">{user.depositDay || 'N/A'}</p>
+              <p className="text-4xl sm:text-6xl font-black text-white">{user.depositDay || 'N/A'}</p>
             </div>
-            <div className="relative z-10">
-              <div className="h-1 w-full bg-white/20 rounded-full mb-3 overflow-hidden shadow-inner">
+            <div className="relative z-10 max-w-sm mx-auto w-full mt-6">
+              <div className="h-2 w-full bg-white/20 rounded-full mb-3 overflow-hidden shadow-inner">
                 <div className="h-full bg-white w-2/3 shadow-[0_0_10px_white]" />
               </div>
-              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] text-white/80">Ciclo de Cobro Activo</p>
+              <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] text-white/80 text-center">Ciclo de Cobro Activo</p>
             </div>
-            <span className="absolute -right-4 -top-4 material-symbols-outlined text-7xl sm:text-8xl text-white/[0.05] rotate-12">payments</span>
+            <span className="absolute -right-4 -top-4 material-symbols-outlined text-7xl sm:text-9xl text-white/[0.05] rotate-12">payments</span>
           </div>
         </div>
+
 
         {/* Payment History Chart - Only for Tenants */}
         {!isOwner && (
@@ -942,6 +968,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
               </div>
 
               <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 ml-4">Tipo de Pago</label>
+                <select
+                  required
+                  className="w-full bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-white/5 font-bold text-slate-900 dark:text-white appearance-none cursor-pointer"
+                  value={voucherType}
+                  onChange={(e) => setVoucherType(e.target.value as any)}
+                >
+                  <option value="" disabled>Seleccionar tipo</option>
+                  <option value="Retiro sin tarjeta">Retiro sin tarjeta</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 ml-4">Archivo (Imagen/PDF)</label>
                 <input
                   type="file"
@@ -950,6 +990,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
                   onChange={handleVoucherSelect}
                 />
               </div>
+
 
               <button
                 onClick={submitVoucher}

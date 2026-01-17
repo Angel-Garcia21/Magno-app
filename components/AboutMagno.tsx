@@ -4,36 +4,41 @@ import { useNavigate } from 'react-router-dom';
 const AboutMagno: React.FC = () => {
     const navigate = useNavigate();
     const sectionRef = useRef<HTMLDivElement>(null);
-    const scrollTextRef = useRef<HTMLHeadingElement>(null);
     const [tooltipOpen, setTooltipOpen] = useState<string | null>(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [scrollProgress, setScrollProgress] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => {
-            if (!scrollTextRef.current) return;
-
-            const rect = scrollTextRef.current.getBoundingClientRect();
+            if (!sectionRef.current) return;
+            const rect = sectionRef.current.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
 
-            // Calculate progress: 0 when element enters viewport, 1 when it's centered
-            const start = viewportHeight * 0.9;
-            const end = viewportHeight * 0.4;
-
-            let progress = (start - rect.top) / (start - end);
+            // Calculate progress: 0 when top is at bottom of viewport, 1 when bottom is at top
+            const start = rect.top;
+            const height = rect.height;
+            let progress = -start / (height - viewportHeight);
             progress = Math.max(0, Math.min(1, progress));
-
-            // Apply gradient or color directly
-            // Using a clip-path for a more "filling" effect or just color interpolation
-            // Simple color interpolation for now: White/Black to Gold
-            // Gold color: #FFD700 (255, 215, 0)
-            // Slate-900: #0f172a (15, 23, 42)
-            // White: #ffffff (255, 255, 255)
-
-            // We'll use CSS variables to control the fill state
-            scrollTextRef.current.style.setProperty('--scroll-progress', `${progress * 100}%`);
+            setScrollProgress(progress);
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!sectionRef.current) return;
+            const rect = sectionRef.current.getBoundingClientRect();
+            setMousePos({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('mousemove', handleMouseMove);
+        handleScroll();
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('mousemove', handleMouseMove);
+        };
     }, []);
 
     const toggleTooltip = (id: string, e: React.MouseEvent) => {
@@ -41,7 +46,6 @@ const AboutMagno: React.FC = () => {
         setTooltipOpen(tooltipOpen === id ? null : id);
     };
 
-    // Close tooltip on global click
     useEffect(() => {
         const closeTooltip = () => setTooltipOpen(null);
         window.addEventListener('click', closeTooltip);
@@ -49,213 +53,239 @@ const AboutMagno: React.FC = () => {
     }, []);
 
     return (
-        <section id="somos-magno" ref={sectionRef} className="py-16 md:py-24 px-4 sm:px-6 md:px-12 bg-white dark:bg-[#0B1120] overflow-hidden relative">
-            {/* Background embellishments */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        <section
+            id="somos-magno"
+            ref={sectionRef}
+            className="py-24 md:py-40 px-4 sm:px-6 md:px-12 transition-colors duration-1000 overflow-hidden relative bg-white dark:bg-[#0B1120]"
+            style={{
+                // Subtle gold-infused background shift
+                backgroundColor: scrollProgress > 0 ? undefined : undefined,
+                backgroundImage: `radial-gradient(circle at center, rgba(251, 191, 36, ${0.02 + scrollProgress * 0.08}), transparent)`
+            }}
+        >
+            {/* Mouse Flow Glow - Pure Gold Luxury */}
+            <div
+                className="absolute pointer-events-none w-[800px] h-[800px] rounded-full blur-[120px] opacity-10 dark:opacity-20 transition-opacity duration-1000"
+                style={{
+                    left: mousePos.x - 400,
+                    top: mousePos.y - 400,
+                    background: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%)'
+                }}
+            />
 
-            <div className="max-w-7xl mx-auto space-y-24 relative z-10">
+            <div className="max-w-7xl mx-auto space-y-40 relative z-10">
 
-                {/* Header: Quién es Magno */}
-                <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <h2 className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-primary">Quién es Magno</h2>
-                    <p className="text-lg md:text-3xl font-medium text-slate-600 dark:text-slate-300 leading-relaxed font-display px-2">
-                        Magno nace con un objetivo claro: <span className="text-slate-900 dark:text-white font-bold">ser el estándar en seguridad para tu inmueble.</span> Buscamos brindarte la mayor transparencia y que tengas el control de tu inmueble para que sepas cómo se gestiona, qué pasos vamos dando y cómo estamos realizando los procesos.
-                    </p>
-                    <p className="text-base md:text-lg text-slate-500 leading-relaxed px-4">
-                        Magno es un equipo obsesionado con proteger tu patrimonio y acelerar decisiones con orden, datos y ejecución.
-                        <br />
-                        <span className="block mt-4 text-slate-800 dark:text-slate-200 font-bold">Nacimos para quitarte el caos, recupera el control y Magnifícate.</span>
-                    </p>
+                {/* Hero: MAGNIFÍCATE (Luxury Optimization) */}
+                <div className="relative min-h-[60vh] flex flex-col items-center justify-center text-center">
+                    <h2 className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-primary mb-12 animate-in fade-in duration-1000">Quién es Magno</h2>
+
+                    <h1 className="text-[clamp(3rem,14vw,14rem)] font-black uppercase tracking-[-0.05em] leading-[0.8] relative mb-12 select-none">
+                        {/* Permanent Gold Title */}
+                        <span
+                            className="block"
+                            style={{
+                                background: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                            }}
+                        >
+                            MAGNIFÍCATE
+                        </span>
+                    </h1>
+
+                    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+                        <p className="text-lg md:text-3xl font-medium text-slate-700 dark:text-slate-300 leading-relaxed font-display px-2">
+                            Magno nace con un objetivo claro: <span className="text-slate-900 dark:text-white font-bold underline decoration-primary/30 underline-offset-8">ser el estándar en seguridad para tu inmueble.</span> Buscamos brindarte la mayor transparencia y que tengas el control de tu inmueble para que sepas cómo se gestiona y qué pasos vamos dando.
+                        </p>
+                        <div className="w-24 h-1 bg-gradient-to-r from-primary to-amber-500 mx-auto rounded-full" />
+                        <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                            Magno es un equipo obsesionado con proteger tu patrimonio y acelerar decisiones con orden, datos y ejecución. <span className="text-primary font-black">Nacimos para quitarte el caos, recupera el control y Magnifícate.</span>
+                        </p>
+                    </div>
                 </div>
 
-                {/* Qué Somos */}
-                <div className="grid md:grid-cols-2 gap-16 items-center">
-                    <div className="relative aspect-square max-w-[500px] mx-auto w-full group">
-                        {/* Interactive abstract elements instead of a static image */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-600/10 rounded-[4rem] animate-pulse" />
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full">
-                            {/* Glassmorphism Cards */}
-                            <div className="absolute top-[10%] left-[10%] w-[60%] h-[60%] bg-white/10 dark:bg-slate-800/20 backdrop-blur-xl border border-white/20 rounded-[3rem] shadow-2xl transition-all duration-500 group-hover:-translate-y-4 group-hover:-translate-x-4 group-hover:rotate-2 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-6xl text-primary/80">insights</span>
+                {/* Qué Somos: Logo-Centric 3D Stack */}
+                <div className="grid lg:grid-cols-2 gap-24 items-center">
+                    <div className="relative h-[450px] md:h-[600px] group flex items-center justify-center">
+                        <div className="relative w-full max-w-[400px] aspect-square">
+                            {/* Background Ambient Layer */}
+                            <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/10 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-[4rem] rotate-12 translate-y-16 transition-all duration-1000 group-hover:rotate-0 group-hover:translate-y-0" />
+
+                            {/* Interactive Foundation Layer - Gold Themed */}
+                            <div className="absolute inset-0 bg-white/60 dark:bg-gradient-to-br dark:from-amber-600/10 dark:to-amber-500/10 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/20 rounded-[4rem] -rotate-6 translate-y-8 group-hover:rotate-0 group-hover:translate-y-0 transition-all duration-1000 flex flex-col items-center justify-center p-12 text-center gap-6">
+                                <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-4xl text-amber-600">shield</span>
+                                </div>
+                                <h4 className="text-xl font-bold uppercase text-slate-900 dark:text-white tracking-[0.2em]">Magno Security</h4>
                             </div>
-                            <div className="absolute bottom-[10%] right-[10%] w-[60%] h-[60%] bg-slate-900/40 dark:bg-slate-700/40 backdrop-blur-2xl border border-white/10 rounded-[3rem] shadow-2xl transition-all duration-500 delay-75 group-hover:translate-y-4 group-hover:translate-x-4 group-hover:-rotate-2 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-6xl text-white/80">hub</span>
+
+                            {/* Top Executive Layer: Logo Focus */}
+                            <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-2 border-amber-500/40 rounded-[4rem] shadow-2xl dark:shadow-glow flex flex-col items-center justify-center p-12 -translate-x-6 -translate-y-6 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-1000 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-50" />
+                                <div className="relative z-10 flex flex-col items-center gap-6">
+                                    {/* Magno Lion Logo */}
+                                    <div className="relative w-32 h-32 flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-2xl animate-pulse" />
+                                        <img
+                                            src="/assets/magno-logo.png"
+                                            alt="Magno Logo"
+                                            className="w-full h-full object-contain brightness-0 dark:brightness-100 group-hover:scale-110 transition-transform duration-700"
+                                        />
+                                    </div>
+                                    <div className="text-center space-y-2">
+                                        <h3 className="text-3xl font-black uppercase tracking-widest text-slate-900 dark:text-white">MAGNO</h3>
+                                        <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 dark:text-amber-500">Estándar de Lujo</p>
+                                    </div>
+                                </div>
                             </div>
-                            {/* Floating decorative nodes */}
-                            <div className="absolute top-4 right-1/4 w-12 h-12 bg-primary rounded-2xl animate-bounce shadow-glow flex items-center justify-center text-white">
-                                <span className="material-symbols-outlined text-xl">bolt</span>
-                            </div>
-                            <div className="absolute bottom-1/4 left-4 w-16 h-16 bg-amber-500 rounded-full animate-pulse border-4 border-white dark:border-slate-900 shadow-xl flex items-center justify-center text-white">
-                                <span className="material-symbols-outlined text-2xl">verified</span>
-                            </div>
-                        </div>
-                        <div className="absolute inset-x-0 bottom-4 text-center">
-                            <h3 className="text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white group-hover:scale-110 transition-transform">Qué Somos</h3>
                         </div>
                     </div>
-                    <div className="space-y-6">
+
+                    <div className="space-y-4">
                         {[
                             {
                                 title: "Tecnología + Proceso",
                                 desc: "Somos una plataforma inmobiliaria con operación real: combinamos lo mejor de la tecnología con asesoría profesional humana.",
-                                icon: "settings_suggest"
+                                icon: "settings_suggest",
+                                color: "text-blue-500"
                             },
                             {
                                 title: "Trazabilidad Total",
                                 desc: "Un sistema que te permite vender, rentar y administrar con estructura: desde el primer contacto hasta la firma y la administración.",
-                                icon: "account_tree"
+                                icon: "account_tree",
+                                color: "text-amber-500"
                             },
                             {
                                 title: "Activos, no problemas",
                                 desc: "Convertimos tu propiedad en un activo bien gestionado, no en un problema que te roba tiempo.",
-                                icon: "verified_user"
+                                icon: "verified_user",
+                                color: "text-red-500"
                             }
                         ].map((item, i) => (
-                            <div key={i} className="group p-6 rounded-[2rem] hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-100 dark:hover:border-white/5">
-                                <div className="flex items-center gap-4 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                            <div key={i} className="group p-8 rounded-[3rem] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-primary/20 transition-all duration-500">
+                                <div className="flex items-center gap-8">
+                                    <div className={`w-14 h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center ${item.color} group-hover:scale-110 shadow-sm dark:shadow-none transition-transform duration-500`}>
+                                        <span className="material-symbols-outlined text-3xl">{item.icon}</span>
                                     </div>
-                                    <h4 className="text-xl font-black uppercase text-slate-900 dark:text-white">
-                                        {item.title}
-                                    </h4>
+                                    <div className="flex-1">
+                                        <h4 className="text-xl font-black uppercase text-slate-900 dark:text-white tracking-tight mb-1">
+                                            {item.title}
+                                        </h4>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                    </div>
                                 </div>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed pl-14">{item.desc}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Qué Hacemos */}
-                <div className="space-y-16">
-                    <div className="text-center">
-                        <h2 className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-primary mb-4">Qué Hacemos</h2>
-                        <h3 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Soluciones Integrales</h3>
+                {/* Qué Hacemos: Soluciones (Original Texts) */}
+                <div className="space-y-24">
+                    <div className="text-center space-y-4">
+                        <h2 className="text-sm font-black uppercase tracking-[0.6em] text-primary">Nuestras Soluciones</h2>
+                        <h3 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">QUÉ HACEMOS</h3>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {/* Card 1: Renta y Admin */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-[2.5rem] hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-sm hover:shadow-xl border border-slate-100 dark:border-white/5 group">
-                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-2xl">vpn_key</span>
+                        {/* Renta y Admin */}
+                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-10 rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[480px]">
+                            <div className="space-y-8 relative z-10 flex-1">
+                                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                                    <span className="material-symbols-outlined text-3xl">vpn_key</span>
+                                </div>
+                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">1. Renta y Administración</h4>
+                                <ul className="space-y-4">
+                                    {['Promoción estratégica', 'Filtros reales para tu inmueble', 'Investigación completa de inquilino', 'Proceso de firma con orden'].map((li, idx) => (
+                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                            {li}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <h4 className="text-lg font-black uppercase text-slate-900 dark:text-white mb-6">1. Renta y Administración</h4>
-                            <ul className="space-y-3">
-                                {['Promoción estratégica', 'Filtros reales para tu inmueble', 'Investigación completa de inquilino', 'Proceso de firma con orden'].map((item, i) => (
-                                    <li key={i} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
-                                        <span className="material-symbols-outlined text-[16px] text-green-500 shrink-0">check_circle</span>
-                                        {item}
-                                    </li>
-                                ))}
-                                {['Seguimiento trimestral', 'Reportes adicionales', 'Administración'].map((item, i) => (
-                                    <li key={i + 10} className="relative flex items-start gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
-                                        <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">star</span>
-                                        <span className="flex items-center gap-1 cursor-help relative group/tooltip" onClick={(e) => toggleTooltip(item, e)}>
-                                            {item}*
-                                            {/* Tooltip Logic */}
-                                            {tooltipOpen === item && (
-                                                <>
-                                                    {/* Mobile Backdrop */}
-                                                    <div className="md:hidden fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm animate-in fade-in" onClick={(e) => { e.stopPropagation(); setTooltipOpen(null); }} />
-
-                                                    {/* Tooltip Content */}
-                                                    <div className="fixed md:absolute left-0 right-0 bottom-0 md:bottom-full md:left-0 md:right-auto md:mb-2 w-full md:w-64 p-8 pb-32 md:p-4 bg-slate-900 text-white text-[10px] leading-relaxed rounded-t-[2rem] md:rounded-xl shadow-2xl z-[70] animate-in slide-in-from-bottom-full md:zoom-in-95 md:origin-bottom-left flex flex-col gap-2">
-                                                        <div className="md:hidden w-12 h-1 bg-white/20 rounded-full mx-auto mb-2" />
-                                                        <p className="font-medium text-center md:text-left text-xs md:text-[10px]">
-                                                            {item === 'Seguimiento trimestral' && 'Trimestral si no se contrata Administración. Si se contrata, el seguimiento es mensual.'}
-                                                            {item === 'Reportes adicionales' && 'Se generan a solicitud (o se incluyen sin costo extra dentro del servicio de Administración).'}
-                                                            {item === 'Administración' && 'Servicio adicional (10% mensual): Control de pagos, recibos, reportes, recordatorios y seguimiento de morosidad.'}
-                                                        </p>
-                                                        <button className="md:hidden mt-4 bg-white/10 py-3 rounded-xl font-bold uppercase tracking-widest text-[9px] w-full" onClick={(e) => { e.stopPropagation(); setTooltipOpen(null); }}>Entendido</button>
-                                                        <div className="hidden md:block absolute bottom-[-6px] left-4 w-3 h-3 bg-slate-900 rotate-45 transform"></div>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/5">
+                                <p className="text-[10px] font-black uppercase text-amber-600 tracking-widest text-center">Seguridad Patrimonial</p>
+                            </div>
                         </div>
 
-                        {/* Card 2: Venta */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-[2.5rem] hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-sm hover:shadow-xl border border-slate-100 dark:border-white/5 group">
-                            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 mb-6 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-2xl">sell</span>
+                        {/* Venta con Estrategia */}
+                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-10 rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[480px]">
+                            <div className="space-y-8 relative z-10 flex-1">
+                                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-500 rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform">
+                                    <span className="material-symbols-outlined text-3xl">sell</span>
+                                </div>
+                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">2. Venta con Estrategia</h4>
+                                <ul className="space-y-4">
+                                    {['Opinión de valor sustentada', 'Análisis legal y fiscal', 'Promoción estratégica', 'Presentación y negociación clara', 'Acompañamiento hasta el cierre'].map((li, idx) => (
+                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                            {li}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <h4 className="text-lg font-black uppercase text-slate-900 dark:text-white mb-6">2. Venta con Estrategia</h4>
-                            <ul className="space-y-3">
-                                {['Opinión de valor sustentada', 'Análisis legal y fiscal', 'Promoción estratégica', 'Presentación y negociación clara', 'Acompañamiento hasta el cierre'].map((item, i) => (
-                                    <li key={i} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
-                                        <span className="material-symbols-outlined text-[16px] text-amber-500 shrink-0">check_circle</span>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
                         </div>
 
-                        {/* Card 3: Operación Digital */}
-                        <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border border-white/10 group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] pointer-events-none" />
-                            <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-2xl">smart_toy</span>
-                            </div>
-                            <h4 className="text-lg font-black uppercase text-white mb-6">3. Operación Digital</h4>
-                            <p className="text-xs text-slate-300 leading-relaxed mb-6">
-                                Somos pioneros en la automatización y uso de IA para el manejo seguro de tu inmueble. Herramientas a la vanguardia para que tu proceso sea seguro y sin fricción.
-                            </p>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-primary text-center">IA + Automatización</p>
+                        {/* Operación Digital - Gold Accent */}
+                        <div className="group relative bg-[#0B1120] p-10 rounded-[3.5rem] border-2 border-amber-500/30 shadow-xl overflow-hidden flex flex-col min-h-[480px]">
+                            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent" />
+                            <div className="relative z-10 space-y-8 flex-1">
+                                <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-3xl">smart_toy</span>
+                                </div>
+                                <h4 className="text-2xl font-black uppercase text-white">3. Operación Digital</h4>
+                                <p className="text-sm text-slate-300 leading-relaxed font-bold">
+                                    Somos pioneros en la automatización y uso de IA para el manejo seguro de tu inmueble. Herramientas a la vanguardia para que tu proceso sea seguro y sin fricción.
+                                </p>
+                                <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 text-center">IA + Automatización</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Animated Scroll Text */}
-                <div className="py-12 md:py-24 flex justify-center sticky-text-container">
+                {/* Animated Scroll Text: SANDY GOLD HIGHLIGHT */}
+                <div className="py-20 flex justify-center">
                     <h2
-                        ref={scrollTextRef}
-                        className="text-3xl sm:text-6xl md:text-7xl font-black uppercase tracking-tighter text-center leading-[0.9] transition-colors duration-0"
+                        className="text-[clamp(2.5rem,10vw,8rem)] font-black uppercase tracking-tighter text-center leading-[0.85] transition-all duration-700"
                         style={{
-                            backgroundImage: 'linear-gradient(to bottom, #d97706 var(--scroll-progress, 0%), #ffffff var(--scroll-progress, 0%))',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            color: 'transparent', // Fallback
-                            backgroundClip: 'text',
-                            // Alternative simple color approach if gradient clipping is buggy on hydration:
-                            // We can toggle a class or simpler variable
-                            // Let's use a simpler variable approach for robustness if needed, but gradient fill is the gold standard for "filling up"
-                            // Actually, user said "Pase de blanco a dorado", implying a fade. 
-                            // Let's try direct color transition via variable interpolation for safer rendering
+                            opacity: scrollProgress > 0.4 ? 1 : 0.2,
+                            transform: `scale(${0.95 + scrollProgress * 0.05})`,
                         }}
                     >
-                        <span className="block text-slate-200 dark:text-slate-800"
+                        <span className="block text-slate-400 dark:text-slate-500 transition-colors duration-500">Tu propiedad</span>
+                        <span
+                            className="block transition-all duration-700"
                             style={{
-                                color: 'transparent',
-                                backgroundImage: 'linear-gradient(to top, #fbbf24 0%, #d97706 100%)', // Gold gradient
-                                WebkitBackgroundClip: 'text',
-                                opacity: 'var(--scroll-progress, 0)'
+                                color: scrollProgress > 0.4 ? '#d4af37' : 'inherit',
+                                textShadow: scrollProgress > 0.4 ? '0 0 30px rgba(212, 175, 55, 0.5)' : 'none'
                             }}
-                        >Tu propiedad<br />es mi prioridad</span>
-                        {/* Overlay for the base color */}
-                        <span className="block absolute inset-0 text-slate-300 dark:text-slate-700 pointer-events-none" style={{ opacity: 'calc(1 - var(--scroll-progress, 0))' }}>
-                            Tu propiedad<br />es mi prioridad
+                        >
+                            es mi prioridad
                         </span>
                     </h2>
                 </div>
 
-                {/* A Dónde Vamos & Valores */}
-                <div className="grid md:grid-cols-2 gap-16">
-                    <div className="space-y-6 md:space-y-8">
-                        <h2 className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-primary">A Dónde Vamos</h2>
-                        <h3 className="text-2xl md:text-3xl font-black uppercase text-slate-900 dark:text-white leading-tight">Estándar de servicio: Rápido, Claro y Estructurado</h3>
-                        <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+                {/* Vision & Values: GOLD HIGHLIGHTS (Anti-Italic) */}
+                <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-start">
+                    <div className="space-y-12">
+                        <div className="space-y-6">
+                            <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary">A Dónde Vamos</h2>
+                            <h3 className="text-4xl md:text-5xl font-black uppercase text-slate-900 dark:text-white leading-[0.9] tracking-tighter">
+                                Estándar de servicio:<br />
+                                <span className="text-amber-500">Rápido, Claro y Estructurado</span>
+                            </h3>
+                        </div>
+                        <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-display">
                             Magnificamos una plataforma donde propietarios y clientes puedan ver, decidir y firmar con orden; y donde cada propiedad se opere como debe: con procesos, evidencia y resultados.
                         </p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-10 rounded-[3rem]">
-                        <h2 className="text-sm md:text-base font-black uppercase tracking-[0.5em] text-primary mb-8">Nuestros Valores</h2>
-                        <div className="space-y-6">
+
+                    <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-3xl p-12 rounded-[4rem] border border-slate-200 dark:border-white/10 space-y-10">
+                        <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary mb-8">Nuestros Valores</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             {[
                                 { t: 'Magnificar', d: 'Brindar la mayor cantidad de valor posible.' },
                                 { t: 'Seguridad', d: 'Procesos que protegen tu patrimonio.' },
@@ -264,11 +294,11 @@ const AboutMagno: React.FC = () => {
                                 { t: 'Integridad', d: 'Lo que se promete, se sostiene.' },
                                 { t: 'Rapidez', d: 'Ejecución con método, no con prisa.' }
                             ].map((v, i) => (
-                                <div key={i} className="flex gap-4">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+                                <div key={i} className="flex gap-4 group">
+                                    <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0 group-hover:scale-150 transition-transform"></span>
                                     <div>
-                                        <h4 className="text-sm font-black uppercase text-slate-900 dark:text-white">{v.t}</h4>
-                                        <p className="text-xs text-slate-500">{v.d}</p>
+                                        <h4 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-widest">{v.t}</h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-500 leading-relaxed">{v.d}</p>
                                     </div>
                                 </div>
                             ))}
@@ -276,15 +306,40 @@ const AboutMagno: React.FC = () => {
                     </div>
                 </div>
 
-                {/* CTA Final */}
-                <div className="text-center space-y-8 py-12">
-                    <p className="text-xl md:text-2xl font-medium text-slate-900 dark:text-white">Si quieres vender, rentar o administrar con un equipo que sí opera,<br className="hidden md:block" /> estás en el lugar correcto.</p>
+                {/* CTA Final - Enhanced Presence */}
+                <div className="relative text-center space-y-16 py-40 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900/30 rounded-[5rem] border border-slate-100 dark:border-amber-500/10 transition-colors duration-500 overflow-hidden">
+                    {/* Subtle decorative accent */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50" />
+
+                    <div className="relative z-10 max-w-4xl mx-auto px-6">
+                        <p className="text-3xl md:text-5xl font-black leading-[1.3] tracking-tight">
+                            <span className="text-slate-900 dark:text-white">Si quieres <span style={{ color: '#fbbf24' }}>vender</span>, <span style={{ color: '#fbbf24' }}>rentar</span> o <span style={{ color: '#fbbf24' }}>administrar</span> con un equipo que sí opera,</span>{' '}
+                            <span
+                                className="text-4xl md:text-6xl"
+                                style={{
+                                    background: 'linear-gradient(90deg, #fbbf24 0%, #d4af37 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                }}
+                            >
+                                estás en el lugar correcto.
+                            </span>
+                        </p>
+                    </div>
+
                     <button
                         onClick={() => navigate('/client-portal')}
-                        className="px-12 py-5 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black uppercase tracking-[0.2em] rounded-full shadow-lg hover:shadow-amber-500/25 hover:scale-105 transition-all text-sm"
+                        className="px-20 py-7 text-white font-black uppercase tracking-[0.3em] rounded-full shadow-2xl hover:shadow-amber-500/30 hover:scale-110 active:scale-95 transition-all text-base border-2 border-amber-400/30"
+                        style={{
+                            background: 'linear-gradient(135deg, #fbbf24 0%, #d4af37 100%)'
+                        }}
                     >
                         Magnifícate
                     </button>
+
+                    <div className="pt-8 flex flex-col items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.5em]">Magno Inmobiliaria © 2024</span>
+                    </div>
                 </div>
 
             </div>

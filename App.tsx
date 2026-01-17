@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { Property, TimelineEvent, User } from './types';
 import { ALL_PROPERTIES, INITIAL_TIMELINE } from './constants';
 import Navigation from './components/Navigation';
@@ -18,7 +18,9 @@ import PropertyDetails from './screens/PropertyDetails';
 import AdminDashboard from './screens/AdminDashboard';
 import PropertySubmission from './screens/PropertySubmission';
 import PropertySubmissionSale from './screens/PropertySubmissionSale';
+import GeneralApplication from './screens/GeneralApplication';
 import ClientPortal from './screens/ClientPortal';
+import RentPropertyLanding from './screens/RentPropertyLanding';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -80,11 +82,14 @@ const AppContent: React.FC = () => {
           features: p.features || [],
           services: p.services || [],
           amenities: p.amenities || [],
+          spaces: p.spaces || [],
+          additionals: p.additionals || [],
           documents: [],
           status: p.status || 'available',
           type: p.type || 'sale',
           maintenanceFee: p.maintenance_fee || 0,
-          accessCode: p.ref || '0000'
+          accessCode: p.ref || '0000',
+          status_reason: p.status_reason
         }));
       } else {
         publicProps = ALL_PROPERTIES;
@@ -168,7 +173,6 @@ const AppContent: React.FC = () => {
     setUsers(updatedUsers);
   };
 
-  // Find the user's property with improved logic
   const userProperty = properties.find(p => {
     // Priority 1: Direct property_id link (Public only)
     if (user?.propertyId && p.id === user.propertyId) {
@@ -180,7 +184,7 @@ const AppContent: React.FC = () => {
     }
     // Priority 3: Check ownership/tenancy (Works for both)
     return p.ownerId === user?.id || p.tenantId === user?.id;
-  }) || properties[0]; // Fallback to first property if no match
+  }) || null; // Removed fallback to properties[0] to avoid showing incorrect properties to new users
 
   if (!supabase) {
     return (
@@ -215,8 +219,12 @@ const AppContent: React.FC = () => {
     );
   }
 
+  const location = useLocation();
+  const isLandingPage = location.pathname.includes('/landing/');
+  const isSubmission = location.pathname.startsWith('/vender') || location.pathname.startsWith('/rentar');
+
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className={`min-h-screen bg-background-light dark:bg-background-dark ${(isLandingPage || isSubmission) ? '' : 'pb-32 md:pb-0'}`}>
       <Routes>
         <Route path="/" element={<PublicHome properties={properties} />} />
         <Route path="/listings" element={<PublicListings properties={properties} />} />
@@ -229,21 +237,32 @@ const AppContent: React.FC = () => {
         <Route path="/vender" element={<PropertySubmission mode="sale" />} />
         <Route path="/rentar" element={<PropertySubmission mode="rent" />} />
 
+        {/* New General Visit Request Route */}
+        <Route path="/agenda-abierta" element={<GeneralApplication />} />
+
+        {/* Landing Pages */}
+        <Route path="/landing/renta-tu-propiedad" element={<RentPropertyLanding />} />
+
         <Route path="/client-portal" element={<ClientPortal />} />
 
         <Route path="/property/:id" element={<PropertyDetailsWrapper properties={properties} />} />
 
         <Route path="/login" element={
           user ? (
-            user.role === 'admin' ? <Navigate to="/admin" /> :
-              user.role === 'owner' ? <Navigate to="/client-portal" /> :
-                <Navigate to="/dashboard" />
+            (user.role === 'admin' || user.role === 'marketing' || user.role === 'asesor') ? <Navigate to="/admin" /> :
+              <Navigate to="/client-portal" />
           ) : <LoginPage />
         } />
 
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            {user?.role === 'admin' ? <Navigate to="/admin" /> : <Dashboard user={user!} property={userProperty} />}
+            {(user?.role === 'admin' || user?.role === 'marketing' || user?.role === 'asesor') ? (
+              <Navigate to="/admin" />
+            ) : userProperty ? (
+              <Dashboard user={user!} property={userProperty!} />
+            ) : (
+              <Navigate to="/client-portal" />
+            )}
           </ProtectedRoute>
         } />
 
@@ -255,7 +274,7 @@ const AppContent: React.FC = () => {
 
 
         <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['admin', 'marketing', 'asesor']}>
             <AdminDashboard
               properties={properties}
               onPropertyUpdate={handlePropertyUpdate}
@@ -263,11 +282,12 @@ const AppContent: React.FC = () => {
               onDeleteProperty={handlePropertyDelete}
               users={users}
               onUsersUpdate={handleUsersUpdate}
+              currentUser={user}
             />
           </ProtectedRoute>
         } />
       </Routes>
-      <Navigation user={user} onLogout={signOut} />
+      {(!isLandingPage && !isSubmission) && <Navigation user={user} onLogout={signOut} />}
     </div>
   );
 };

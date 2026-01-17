@@ -238,6 +238,15 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
             else await supabase.from('property_submissions').insert([subData]);
 
             toastSuccess?.('Propiedad enviada para revisión.');
+
+            // Link existing documents if any (standardizing archive)
+            if (formData.id_url || formData.predial_url) {
+                const docsToLink = [];
+                if (formData.id_url) docsToLink.push({ property_id: null, user_id: user.id, document_type: 'contract', pdf_url: formData.id_url, status: 'signed', signed_at: new Date().toISOString() });
+                if (formData.predial_url) docsToLink.push({ property_id: null, user_id: user.id, document_type: 'recruitment', pdf_url: formData.predial_url, status: 'signed', signed_at: new Date().toISOString() });
+                await supabase.from('signed_documents').insert(docsToLink);
+            }
+
             setSubmitted(true);
         } catch (err: any) {
             toastError?.('Error: ' + err.message);
@@ -338,11 +347,11 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
             </header>
 
             <div className={`${step === 7 ? 'max-w-6xl' : 'max-w-3xl'} mx-auto p-6 pt-10 transition-all duration-700`}>
-                <div className="flex justify-between mb-12 relative">
-                    <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 -z-10 -translate-y-1/2 rounded-full" />
-                    <div className="absolute top-1/2 left-0 h-1 bg-primary -z-10 -translate-y-1/2 rounded-full transition-all duration-500" style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }} />
+                <div className="flex justify-between mb-12 relative overflow-x-auto no-scrollbar pb-4 -mx-6 px-6">
+                    <div className="absolute top-[20px] left-0 w-[600px] h-1 bg-slate-200 dark:bg-slate-800 -z-10 rounded-full" />
+                    <div className="absolute top-[20px] left-0 h-1 bg-primary -z-10 rounded-full transition-all duration-500" style={{ width: `${((step - 1) / (steps.length - 1)) * 600}px` }} />
                     {steps.map(s => (
-                        <div key={s.id} className={`w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all ${step >= s.id ? 'bg-primary border-primary text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-300'}`}><span className="material-symbols-outlined text-sm">{s.icon}</span></div>
+                        <div key={s.id} className={`w-10 h-10 rounded-full flex items-center justify-center border-4 border-solid flex-shrink-0 transition-all z-10 ${step >= s.id ? 'bg-primary border-primary text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-300'}`}><span className="material-symbols-outlined text-sm">{s.icon}</span></div>
                     ))}
                 </div>
 
@@ -440,7 +449,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-slate-400 pl-3">Antigüedad</label>
                                     <div className="flex flex-col gap-2">
@@ -483,7 +492,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2"><label className="text-[10px] font-black uppercase text-slate-400 pl-3">Terreno m2</label><input type="text" name="land_area" value={formData.land_area} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-none font-bold text-sm" /></div>
                                 <div className="space-y-2"><label className="text-[10px] font-black uppercase text-slate-400 pl-3">Construcción m2</label><input type="text" name="construction_area" value={formData.construction_area} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-none font-bold text-sm" /></div>
                             </div>
@@ -530,7 +539,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                         <p className="text-xs text-blue-700/70 dark:text-blue-400 font-bold leading-relaxed">Sus documentos de Identificación y Predial son estrictamente confidenciales. No se mostrarán públicamente y sirven únicamente como respaldo interno para validar la propiedad y generar confianza en nuestra plataforma.</p>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-white/5 flex flex-col items-center gap-2 relative group hover:border-primary/20 transition-all">
                                         <span className="material-symbols-outlined text-4xl text-primary">badge</span><span className="text-[10px] sm:text-xs font-black uppercase">Aquí carga tu INE</span>
                                         <input type="file" onChange={(e) => handleFileChange(e, 'id_url')} className="absolute inset-0 opacity-0 cursor-pointer" />
@@ -550,7 +559,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-300 pl-3">¿Entregas copia de llaves?</p>
                                 </div>
 
-                                <div className="flex gap-4">
+                                <div className="flex flex-col sm:flex-row gap-4">
                                     <button onClick={() => setFormData(p => ({ ...p, keys_provided: true }))} className={`flex-1 p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${formData.keys_provided ? 'bg-primary/5 border-primary shadow-glow shadow-primary/10 scale-105' : 'bg-transparent border-slate-200 dark:border-white/5 opacity-50 contrast-50'}`}><span className={`material-symbols-outlined text-3xl ${formData.keys_provided ? 'text-primary' : 'text-slate-400'}`}>vpn_key</span><span className="text-[10px] sm:text-xs font-black uppercase">Entregar Copia</span></button>
                                     <button onClick={() => setFormData(p => ({ ...p, keys_provided: false }))} className={`flex-1 p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${!formData.keys_provided ? 'bg-slate-900 text-white border-slate-900 scale-105' : 'bg-transparent border-slate-200 dark:border-white/5 opacity-50'}`}><span className="material-symbols-outlined text-3xl">person_pin_circle</span><span className="text-[10px] sm:text-xs font-black uppercase">Asisto Yo</span></button>
                                 </div>

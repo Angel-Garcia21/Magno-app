@@ -3,11 +3,13 @@ export enum PropertyStatus {
   AVAILABLE = 'available',
   RENTED = 'rented',
   SOLD = 'sold',
+  RESERVED = 'reserved',
+  PAUSED = 'paused',
   MAINTENANCE = 'maint',
   PENDING_REVIEW = 'pending'
 }
 
-export type UserRole = 'guest' | 'owner' | 'admin' | 'tenant';
+export type UserRole = 'guest' | 'owner' | 'admin' | 'tenant' | 'marketing' | 'asesor';
 
 export interface User {
   id: string;
@@ -46,6 +48,18 @@ export interface Document {
   type: 'image' | 'pdf';
   uploadedAt: string;
   uploadedBy: UserRole;
+}
+
+export interface SignedDocument {
+  id: string;
+  property_id: string;
+  user_id: string;
+  document_type: 'recruitment' | 'keys' | 'contract';
+  status: 'pending' | 'signed';
+  signature_url?: string;
+  pdf_url?: string;
+  signed_at?: string;
+  created_at: string;
 }
 
 export interface Property {
@@ -98,6 +112,8 @@ export interface Property {
   longitude?: number;
   fullAddress?: string;
   isInternal?: boolean;
+  keys_provided?: boolean;
+  status_reason?: string;
 }
 
 
@@ -119,6 +135,8 @@ export interface PaymentProof {
   proofUrl: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
+  paymentType?: string;
+
   userName?: string; // For Admin UI
   propertyRef?: string; // For Admin UI
 }
@@ -238,4 +256,27 @@ export interface RentalApplication {
   is_bureau_severe?: boolean;
   mortgage_status?: string;
   payment_method?: string;
+}
+
+export interface TokkoContact {
+  id: number;
+  full_name: string;
+  email: string;
+  phone: string;
+  mobile?: string;
+  tags: { id: number; name: string }[];
+  properties: any[];
+  search_details?: {
+    operation_type?: string;
+    property_types?: string[];
+    price_from?: number;
+    price_to?: number;
+  };
+  latest_notes?: {
+    id: number;
+    text: string;
+    created_at: string;
+  };
+  created_at: string;
+  updated_at: string;
 }

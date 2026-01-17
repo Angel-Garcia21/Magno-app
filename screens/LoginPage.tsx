@@ -64,12 +64,10 @@ const LoginPage: React.FC = () => {
 
           const role = profile?.role;
 
-          if (role === 'admin') {
+          if (role === 'admin' || role === 'marketing' || role === 'asesor') {
             navigate('/admin');
-          } else if (role === 'owner') {
-            navigate('/client-portal');
           } else {
-            navigate('/dashboard');
+            navigate('/client-portal');
           }
         } else {
           navigate('/client-portal');
@@ -146,18 +144,15 @@ const LoginPage: React.FC = () => {
 
             const role = profile?.role;
 
-            if (role === 'admin') {
+            if (role === 'admin' || role === 'marketing' || role === 'asesor') {
               navigate('/admin');
-            } else if (role === 'owner') {
-              // If explicitly passing intent for existing user
+            } else {
+              // Redirect to client-portal (which handles both owners and tenants without properties)
               if (intent) {
                 navigate('/client-portal', { state: { openForm: intent } });
               } else {
                 navigate('/client-portal');
               }
-            } else {
-              // Default fallback for other roles (e.g. tenant)
-              navigate('/dashboard');
             }
           } else {
             // Fallback if no user found (unlikely after success)
@@ -231,7 +226,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 font-display">
-      <header className="sticky top-0 z-50 w-full px-8 py-6 flex items-center justify-between border-b border-slate-100 dark:border-white/5 bg-white/50 dark:bg-slate-950/50 backdrop-blur-2xl">
+      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between border-b border-slate-100 dark:border-white/5 bg-white/50 dark:bg-slate-950/50 backdrop-blur-2xl">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-3 text-slate-400 hover:text-primary transition-all group"
@@ -241,17 +236,17 @@ const LoginPage: React.FC = () => {
         </button>
 
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-white dark:bg-primary/20 rounded-xl flex items-center justify-center border-2 border-primary/30 shadow-glow overflow-hidden">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white dark:bg-primary/20 rounded-xl flex items-center justify-center border-2 border-primary/30 shadow-glow overflow-hidden">
             <img
               src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png"
               alt="Magno Logo"
-              className="w-full h-full object-contain p-1.5 drop-shadow-xl"
+              className="w-full h-full object-contain p-1 sm:p-1.5 drop-shadow-xl"
             />
           </div>
-          <span className="text-sm font-black uppercase tracking-tighter text-slate-900 dark:text-white">Magno Identity</span>
+          <span className="text-xs sm:text-sm font-black uppercase tracking-tighter text-slate-900 dark:text-white">Magno Identity</span>
         </div>
 
-        <div className="w-20" />
+        <div className="hidden sm:block w-20" />
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 pb-32">
@@ -273,7 +268,7 @@ const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-12 rounded-[4rem] shadow-3xl border border-slate-100 dark:border-white/5 overflow-hidden relative">
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-12 rounded-[2.5rem] sm:rounded-[4rem] shadow-3xl border border-slate-100 dark:border-white/5 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
 
             {/* WIZARD STEP 0: LOGIN / REGISTER */}
@@ -299,17 +294,17 @@ const LoginPage: React.FC = () => {
                   {!isLogin && (
                     <div className="space-y-3 animate-in fade-in slide-in-from-top-4">
                       <label htmlFor="name-input" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-6 block">Nombre Completo</label>
-                      <input id="name-input" name="name" type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-[2rem] p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="Tu Nombre Completo" required={!isLogin} autoComplete="name" />
+                      <input id="name-input" name="name" type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="Tu Nombre Completo" required={!isLogin} autoComplete="name" />
                     </div>
                   )}
                   <div className="space-y-3">
                     <label htmlFor="email-input" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-6 block">Correo Electrónico</label>
-                    <input id="email-input" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-[2rem] p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="tu@email.com" required autoComplete="email" />
+                    <input id="email-input" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="tu@email.com" required autoComplete="email" />
                   </div>
                   <div className="space-y-3">
                     <label htmlFor="password-input" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-6 block">Contraseña</label>
                     <div className="relative">
-                      <input id="password-input" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-[2rem] p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold pr-16" placeholder="••••••••" required autoComplete="current-password" />
+                      <input id="password-input" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold pr-16" placeholder="••••••••" required autoComplete="current-password" />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                         <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                       </button>
@@ -334,7 +329,7 @@ const LoginPage: React.FC = () => {
                     </div>
                   )}
 
-                  <button disabled={loading} className="w-full bg-slate-900 text-white font-black py-7 rounded-[2.5rem] shadow-2xl active:scale-[0.98] transition-all mt-6 text-[11px] uppercase tracking-[0.4em] disabled:opacity-50">
+                  <button disabled={loading} className="w-full bg-slate-900 text-white font-black py-5 sm:py-7 rounded-2xl sm:rounded-[2.5rem] shadow-2xl active:scale-[0.98] transition-all mt-6 text-[11px] uppercase tracking-[0.4em] disabled:opacity-50">
                     {loading ? 'Procesando...' : (isLogin ? 'Entrar al Panel' : 'Continuar Registro')}
                   </button>
                 </form>
@@ -346,9 +341,9 @@ const LoginPage: React.FC = () => {
               <div className="space-y-8 animate-in fade-in slide-in-from-right-8">
                 <div className="space-y-3">
                   <label htmlFor="age-input" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-6 block">Edad</label>
-                  <input id="age-input" name="age" type="number" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-[2rem] p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="Ej. 35" min="18" required />
+                  <input id="age-input" name="age" type="number" value={age} onChange={e => setAge(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border-none text-base focus:ring-2 focus:ring-primary/20 transition-all font-bold" placeholder="Ej. 35" min="18" required />
                 </div>
-                <button onClick={handleSubmit} disabled={loading} className="w-full bg-slate-900 text-white font-black py-7 rounded-[2.5rem] shadow-2xl active:scale-[0.98] transition-all mt-6 text-[11px] uppercase tracking-[0.4em]">
+                <button onClick={handleSubmit} disabled={loading} className="w-full bg-slate-900 text-white font-black py-5 sm:py-7 rounded-2xl sm:rounded-[2.5rem] shadow-2xl active:scale-[0.98] transition-all mt-6 text-[11px] uppercase tracking-[0.4em]">
                   {loading ? 'Guardando...' : 'Siguiente Paso'}
                 </button>
               </div>

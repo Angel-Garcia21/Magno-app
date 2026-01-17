@@ -6,6 +6,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     console.error('CRITICAL: Missing Supabase environment variables. Please check your Vercel/Environment settings.');
+} else {
+    console.log('[Magno Supabase] Connected with URL:', supabaseUrl.substring(0, 15) + '...');
 }
 
 // Ensure the client is only created if variables exist to avoid crashing

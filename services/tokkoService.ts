@@ -96,5 +96,86 @@ export const tokkoService = {
         }
         console.log('Sync completed with results:', results);
         return results;
+    },
+
+    async fetchLeads(maxResults = 100) {
+        // SOLUTION: The first 500+ contacts are all deleted. We need to paginate
+        // through the API to find non-deleted contacts.
+        // We'll fetch in batches and filter out deleted ones until we have enough.
+
+        const allOpportunities: any[] = [];
+        let offset = 0;
+        const batchSize = 200;
+        const maxAttempts = 15; // Don't fetch more than 3000 contacts total
+
+        for (let attempt = 0; attempt < maxAttempts && allOpportunities.length < maxResults; attempt++) {
+            const response = await fetch(
+                `${TOKKO_BASE_URL}/contact/?key=${TOKKO_API_KEY}&format=json&limit=${batchSize}&offset=${offset}&lang=es&order_by=-updated_at`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Tokko API error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // Filter for non-deleted contacts
+            const activeContacts = data.objects.filter((contact: any) => !contact.deleted_at);
+
+            allOpportunities.push(...activeContacts);
+
+            // If we got fewer results than requested, we've reached the end
+            if (data.objects.length < batchSize) break;
+
+            offset += batchSize;
+        }
+
+        // Return up to maxResults
+        return allOpportunities.slice(0, maxResults);
+    },
+
+    formatTokkoDate(dateStr: string) {
+        if (!dateStr) return 'Sin fecha';
+        // Tokko dates are often "YYYY-MM-DDTHH:mm:ss"
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) {
+                // Try manual split if Date constructor fails
+                const parts = dateStr.split(' ');
+                if (parts.length >= 1) return parts[0];
+                return dateStr;
+            }
+            return d.toLocaleDateString('es-MX', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return dateStr || 'Error fecha';
+        }
+    },
+
+    async fetchContactDetails(id: number) {
+        const response = await fetch(`${TOKKO_BASE_URL}/contact/${id}/?key=${TOKKO_API_KEY}&format=json&lang=es`);
+        if (!response.ok) {
+            throw new Error(`Tokko API error: ${response.statusText}`);
+        }
+        return await response.json();
+    },
+
+    getLeadStatus(tags: { name: string }[]) {
+        const statusTags = [
+            'Pendiente contactar',
+            'Esperando respuesta',
+            'Evolucionando',
+            'Tomar Accion',
+            'Congelado'
+        ];
+
+        // Find the first tag that matches one of our statuses
+        const found = tags.find(t => statusTags.includes(t.name));
+        return found ? found.name : 'Pendiente contactar'; // Default
     }
 };

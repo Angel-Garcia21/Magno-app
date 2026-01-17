@@ -46,7 +46,7 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
 
   // 2. Rutas que no deben mostrar navegación inferior
   const hideNavPaths = ['/register-property', '/login', '/appraise'];
-  if (hideNavPaths.includes(location.pathname)) return <ThemeToggleButton />;
+  if (hideNavPaths.some(path => location.pathname.startsWith(path))) return <ThemeToggleButton />;
 
   // Render a single nav item for consistency
   const NavItem = ({ to, icon, label, active }: { to: string, icon: string, label: string, active: boolean }) => (

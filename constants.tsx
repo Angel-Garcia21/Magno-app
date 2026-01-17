@@ -59,10 +59,14 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 'b1',
     title: 'Tendencias del Mercado Inmobiliario 2024',
+    slug: 'tendencias-mercado-2024',
     category: 'Análisis',
     excerpt: '¿Por qué Zapopan sigue siendo la mejor zona para invertir?',
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800',
-    date: 'Hoy'
+    main_image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800',
+    content: [],
+    status: 'published',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];
 

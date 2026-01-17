@@ -11,7 +11,7 @@
 
     /* Semantic Colors */
     --color-background-light: #F8FAFC;
-    --color-background-dark: #0a1628;
+    --color-background-dark: #020617;
     --color-surface-light: #FFFFFF;
     --color-surface-dark: #0f1b2e;
     --color-text-light: #1F2937;
@@ -41,6 +41,7 @@
 /* Global Styles */
 @layer base {
     :root {
+        /* font-size removed to allow zoom to handle scaling */
         --bg-current: var(--color-background-light);
         --text-current: var(--color-text-light);
     }
@@ -58,6 +59,15 @@
         @apply antialiased;
         scroll-behavior: smooth;
         transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Global Zoom - Only for Desktop to maintain the 85% aesthetic without breaking mobile viewport */
+    @media (min-width: 1024px) {
+        body {
+            zoom: 0.85;
+            -moz-transform: scale(0.85);
+            -moz-transform-origin: top center;
+        }
     }
 }
 

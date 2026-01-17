@@ -56,6 +56,18 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                     {/* Left Panel: Files & Data Summary */}
                     <div className="w-full md:w-1/3 bg-slate-50 dark:bg-slate-900/50 p-6 overflow-y-auto border-r border-white/5">
                         <div className="space-y-6">
+                            {/* Signature Status Banner */}
+                            {!recruitment.is_signed && recruitment.status === 'pending' && (
+                                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-4 animate-pulse">
+                                    <div className="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-lg">
+                                        <span className="material-symbols-outlined">ink_pen</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs font-black uppercase text-rose-600 dark:text-rose-400">Propiedad Congelada</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase leading-tight">El propietario no ha firmado la solicitud obligatoria</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Marketing Data Edit Section */}
                             <div className="space-y-2">
@@ -108,11 +120,67 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                             {/* Profile Info */}
                             <div className="space-y-2">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Propietario</h3>
-                                <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5">
-                                    <p className="font-bold dark:text-white">{recruitment.profiles?.full_name || 'Usuario desconocido'}</p>
-                                    <p className="text-sm dark:text-slate-400">{recruitment.profiles?.email}</p>
-                                    <p className="text-xs text-slate-400 mt-2">ID: {recruitment.owner_id}</p>
+                                <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 space-y-2">
+                                    <div>
+                                        <p className="font-bold dark:text-white leading-tight">{recruitment.profiles?.full_name || 'Usuario desconocido'}</p>
+                                        <p className="text-sm dark:text-slate-400">{recruitment.profiles?.email}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                                        <span className="material-symbols-outlined text-sm text-primary">call</span>
+                                        <p className="text-sm font-bold dark:text-white">{fd.contact_phone || 'No proporcionado'}</p>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-1">ID: {recruitment.owner_id}</p>
                                 </div>
+                            </div>
+
+                            {/* Generated Documents (Auto-generated recruitment/keys) */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">description</span>
+                                    Documentación Generada
+                                </h3>
+                                {(recruitment.form_data.unsigned_recruitment_url || recruitment.form_data.unsigned_keys_url) ? (
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {recruitment.form_data.unsigned_recruitment_url && (
+                                            <div className="p-4 bg-primary/5 rounded-[1.5rem] border border-primary/20 flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${recruitment.is_signed ? 'bg-green-500 text-white' : 'bg-rose-500 text-white animate-pulse'}`}>
+                                                        <span className="material-symbols-outlined">{recruitment.is_signed ? 'verified_user' : 'ink_pen'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-black dark:text-white uppercase">Hoja de Reclutamiento</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase">{recruitment.is_signed ? 'Propiedad Firmada' : 'Falta Firma Owner'}</p>
+                                                    </div>
+                                                </div>
+                                                <a href={recruitment.form_data.unsigned_recruitment_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all">
+                                                    <span className="material-symbols-outlined text-sm">visibility</span>
+                                                    PDF
+                                                </a>
+                                            </div>
+                                        )}
+                                        {recruitment.form_data.unsigned_keys_url && (
+                                            <div className="p-4 bg-primary/5 rounded-[1.5rem] border border-primary/20 flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${recruitment.is_signed ? 'bg-green-500 text-white' : 'bg-rose-500 text-white animate-pulse'}`}>
+                                                        <span className="material-symbols-outlined">{recruitment.is_signed ? 'key' : 'key'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-black dark:text-white uppercase">Recibo de Llaves</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase">{recruitment.is_signed ? 'Propiedad Firmada' : 'Falta Firma Owner'}</p>
+                                                    </div>
+                                                </div>
+                                                <a href={recruitment.form_data.unsigned_keys_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all">
+                                                    <span className="material-symbols-outlined text-sm">visibility</span>
+                                                    PDF
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="p-6 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-white/5 text-center">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aún no se ha generado documentación</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Documents Section */}
@@ -121,23 +189,37 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                                     Documentación <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] text-slate-500 dark:text-slate-300">{fd.id_url || fd.predial_url ? 'Presente' : 'Pendiente'}</span>
                                 </h3>
                                 <div className="grid grid-cols-1 gap-3">
-                                    {/* INE */}
-                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between group">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${fd.id_url ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                <span className="material-symbols-outlined">{fd.id_url ? 'badge' : 'priority_high'}</span>
+                                    {/* INE / Identificación(es) */}
+                                    {fd.id_urls && fd.id_urls.length > 0 ? (
+                                        fd.id_urls.map((url: string, idx: number) => (
+                                            <div key={idx} className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/10 text-green-500">
+                                                        <span className="material-symbols-outlined">badge</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold dark:text-white">INE / ID {fd.id_urls.length > 1 ? `#${idx + 1}` : ''}</p>
+                                                        <p className="text-[10px] text-slate-400">Archivo cargado</p>
+                                                    </div>
+                                                </div>
+                                                <a href={url} target="_blank" rel="noreferrer" className="p-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30">
+                                                    <span className="material-symbols-outlined text-sm">download</span>
+                                                </a>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold dark:text-white">INE / Identificación</p>
-                                                <p className="text-[10px] text-slate-400">{fd.id_url ? 'Archivo cargado' : 'No adjuntado'}</p>
+                                        ))
+                                    ) : (
+                                        <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between group">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/10 text-red-500">
+                                                    <span className="material-symbols-outlined">priority_high</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold dark:text-white">INE / Identificación</p>
+                                                    <p className="text-[10px] text-slate-400">No adjuntado</p>
+                                                </div>
                                             </div>
                                         </div>
-                                        {fd.id_url && (
-                                            <a href={fd.id_url} target="_blank" rel="noreferrer" className="p-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30">
-                                                <span className="material-symbols-outlined text-sm">download</span>
-                                            </a>
-                                        )}
-                                    </div>
+                                    )}
 
                                     {/* Predial */}
                                     <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 flex items-center justify-between group">
@@ -181,6 +263,15 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                                             {fd.maintenance_fee ? `$${fd.maintenance_fee}` : 'No especificado'}
                                         </span>
                                     </div>
+                                    {fd.request_professional_photos && (
+                                        <div className="flex justify-between items-center p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mt-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-indigo-500 text-lg">add_a_photo</span>
+                                                <span className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400">Fotos Pro</span>
+                                            </div>
+                                            <span className="px-2 py-1 bg-indigo-500 text-white text-[8px] font-black uppercase tracking-widest rounded-lg">Solicitado</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -193,7 +284,7 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                             <span className="text-[10px] font-bold text-white uppercase tracking-widest">Vista Cliente (En tiempo real)</span>
                         </div>
-                        <div className="scale-[0.70] origin-top mx-auto">
+                        <div className="scale-[0.5] sm:scale-[0.70] origin-top mx-auto p-4">
                             {/* We pass the EDITED form data to the preview, so user sees changes instantly */}
                             <PropertyPreview formData={{ ...fd, title, description }} onEdit={noop} onConfirm={noop} mode={recruitment.type} />
                         </div>
@@ -201,18 +292,35 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t border-white/10 bg-white dark:bg-slate-950 flex justify-end gap-3">
+                <div className="p-4 border-t border-white/10 bg-white dark:bg-slate-950 flex flex-col sm:flex-row justify-end gap-3">
                     {recruitment.status === 'pending' && (
                         <>
-                            <button onClick={() => onStatusChange('rejected', 'Documentación incompleta')} className="px-6 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); onStatusChange('rejected', 'Documentación incompleta'); }}
+                                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-all text-xs uppercase tracking-widest"
+                            >
                                 Rechazar
                             </button>
-                            <button onClick={() => onStatusChange('changes_requested', '', 'Favor de subir foto de INE legible')} className="px-6 py-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white font-bold transition-all">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); onStatusChange('changes_requested', '', 'Favor de subir foto de INE legible'); }}
+                                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white font-bold transition-all text-xs uppercase tracking-widest"
+                            >
                                 Solicitar Cambios
                             </button>
-                            <button onClick={() => onStatusChange('approved')} className="px-6 py-2 rounded-xl bg-green-500 text-white font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center gap-2">
-                                <span className="material-symbols-outlined">check_circle</span>
-                                Aprobar y Publicar
+                            <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); onStatusChange('approved'); }}
+                                disabled={!recruitment.is_signed}
+                                title={!recruitment.is_signed ? 'El propietario aún no ha firmado la solicitud' : ''}
+                                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-widest ${recruitment.is_signed
+                                    ? 'bg-green-500 text-white hover:shadow-lg hover:shadow-green-500/30'
+                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed opacity-50'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-sm">{recruitment.is_signed ? 'check_circle' : 'lock'}</span>
+                                {recruitment.is_signed ? 'Aprobar y Publicar' : 'Congelada'}
                             </button>
                         </>
                     )}

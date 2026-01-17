@@ -10,9 +10,12 @@ import PropertySubmission from './PropertySubmission';
 
 import PropertySubmissionSale from './PropertySubmissionSale';
 import { pdf } from '@react-pdf/renderer';
+import PropertyPreview from '../components/PropertyPreview';
 import RecruitmentPDF from '../components/documents/RecruitmentPDF';
 import KeyReceiptPDF from '../components/documents/KeyReceiptPDF';
 import { saveAs } from 'file-saver';
+import SignatureModal from '../components/SignatureModal';
+import { SignedDocument } from '../types';
 
 const ClientPortal: React.FC = () => {
     const navigate = useNavigate();
@@ -25,17 +28,29 @@ const ClientPortal: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     // State for toggling between "List" and "Add New"
-    const [showPropertyForm, setShowPropertyForm] = useState<'sale' | 'rent' | 'selection' | null>(null);
     const [activeSubmissions, setActiveSubmissions] = useState<any[]>([]);
     const [faqType, setFaqType] = useState<'rent' | 'sale' | null>(null); // For FAQs section
     const [notifications, setNotifications] = useState<any[]>([]);
     const [inquiries, setInquiries] = useState<any[]>([]);
 
+    // Signature State
+    const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+    const [signingDocType, setSigningDocType] = useState<'recruitment' | 'keys' | 'contract' | null>(null);
+    const [signingProperty, setSigningProperty] = useState<Property | null>(null);
+    const [signedDocs, setSignedDocs] = useState<SignedDocument[]>([]);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    // Preview Modal State
+    const [showDocPreview, setShowDocPreview] = useState(false);
+    const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+    const [showPropPreview, setShowPropPreview] = useState(false);
+    const [previewPropData, setPreviewPropData] = useState<any>(null);
+
     useEffect(() => {
         if (location.state && (location.state as any).openForm) {
-            setShowPropertyForm((location.state as any).openForm);
+            navigate((location.state as any).openForm === 'sale' ? '/vender' : '/rentar');
         }
-    }, [location]);
+    }, [location, navigate]);
 
     useEffect(() => {
         if (!user) {
@@ -62,51 +77,83 @@ const ClientPortal: React.FC = () => {
                         ownerId: p.owner_id,
                         specs: p.specs || {},
                         images: p.images || [],
+                        features: p.features || [],
                         services: p.services || [],
                         amenities: p.amenities || [],
                         spaces: p.spaces || [],
+                        additionals: p.additionals || [],
+                        status_reason: p.status_reason
                     }));
-                    setUserProperties(userProps);
                 }
 
-                // 2. Fetch Active Submissions
+                // 2. Fetch Active Submissions & Merge with Properties
                 const { data: subData } = await supabase
                     .from('property_submissions')
                     .select('*')
                     .eq('owner_id', user.id)
                     .in('status', ['draft', 'changes_requested', 'pending']);
 
-                if (subData) setActiveSubmissions(subData);
+                if (subData) {
+                    setActiveSubmissions(subData);
 
-                // 3. Fetch Notifications (New Feature)
+                    const mappedSubs = subData.map((s: any) => {
+                        const fd = JSON.parse(JSON.stringify(s.form_data || {})); // Ensure clean object
+                        return {
+                            id: s.id,
+                            title: fd.title || fd.titulo || `${s.type === 'sale' ? 'Venta' : 'Renta'} en revisión`,
+                            address: fd.address || fd.direccion || 'Dirección en proceso',
+                            mainImage: fd.main_image_url || fd.foto_principal || fd.main_image || null,
+                            status: s.status === 'pending' ? 'En Revisión' : (s.status === 'changes_requested' ? 'Requerido' : 'Borrador'),
+                            type: s.type,
+                            ownerId: s.owner_id,
+                            is_submission: true,
+                            submission_id: s.id,
+                            ref: fd.ref || 'PROV-' + s.id.substring(0, 6).toUpperCase(),
+                            specs: {
+                                beds: fd.rooms || fd.recamaras || 0,
+                                baths: fd.bathrooms || fd.banos || 0,
+                                parking: fd.parking_spots || fd.estacionamientos || 0,
+                                area: fd.construction_area || fd.m2_construccion || 0,
+                                sqft: fd.construction_area || fd.m2_construccion || 0
+                            },
+                            keys_provided: fd.keys_provided,
+                            unsigned_recruitment_url: fd.unsigned_recruitment_url,
+                            unsigned_keys_url: fd.unsigned_keys_url,
+                            main_image_url: fd.main_image_url || fd.foto_principal || fd.main_image
+                        };
+                    });
+
+                    setUserProperties([...userProps, ...mappedSubs]);
+                } else {
+                    setUserProperties(userProps);
+                }
+
+                // 3. Fetch Notifications
                 try {
                     const { data: notifData } = await supabase
                         .from('notifications')
                         .select('*')
                         .eq('user_id', user.id)
                         .order('created_at', { ascending: false });
-
                     if (notifData) setNotifications(notifData);
-                } catch (notifErr) {
-                    console.warn('Notifications feature not fully available:', notifErr);
+                } catch (e) {
+                    console.warn('Notifications not available');
                 }
 
-                // 4. Fetch Inquiries (New Feature) - ONLY if properties exist
+                // 4. Fetch Inquiries
                 if (userProps.length > 0) {
-                    const propertyIds = userProps.map(p => p.id);
-                    // Fetch for both Rent and Sale applications if they share the table or separate
-                    // Assuming rental_applications handles both with 'application_type' column as per migration
                     const { data: inqData } = await supabase
                         .from('rental_applications')
-                        .select(`
-                            *,
-                            properties (title, ref)
-                        `)
-                        .in('property_id', propertyIds)
-                        .order('created_at', { ascending: false });
-
+                        .select('*, properties(*)');
                     if (inqData) setInquiries(inqData);
                 }
+
+                // 5. Fetch Signed Docs
+                const { data: signedData } = await supabase
+                    .from('signed_documents')
+                    .select('*')
+                    .eq('user_id', user.id);
+                if (signedData) setSignedDocs(signedData);
 
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
@@ -123,19 +170,207 @@ const ClientPortal: React.FC = () => {
         navigate('/');
     };
 
-    if (showPropertyForm === 'sale') {
-        return <PropertySubmission mode="sale" onCancel={() => setShowPropertyForm(null)} />;
-    }
+    const handleSignClick = async (prop: Property, docType: 'recruitment' | 'keys' | 'contract') => {
+        setSigningProperty(prop);
+        setSigningDocType(docType);
+        setIsGeneratingPdf(true); // Reuse loading state while generating preview
 
-    if (showPropertyForm === 'rent') {
-        return <PropertySubmission mode="rent" onCancel={() => setShowPropertyForm(null)} />; // Keeping mode prop just in case, but component is hardcoded now
-    }
+        try {
+            // Generate a temporary PDF blob for preview (no signature yet)
+            let pdfBlob = null;
+            const docData = {
+                ...prop,
+                ...(prop.specs || {}),
+                ownerName: user?.name,
+                // Ensure array fields default to empty arrays to avoid PDF crash
+                mobiliario: (prop as any).mobiliario || [],
+                features: (prop as any).features || [],
+                rooms: (prop as any).rooms || prop.specs?.beds,
+                bathrooms: (prop as any).bathrooms || prop.specs?.baths,
+                parking_spots: (prop as any).parking_spots || prop.specs?.parking,
+                maintenance_fee: (prop as any).maintenance_fee,
+            };
 
-    if (showPropertyForm === 'selection') {
+            if (docType === 'recruitment') {
+                pdfBlob = await pdf(<RecruitmentPDF data={docData} mode={prop.type as any} />).toBlob();
+            } else if (docType === 'keys') {
+                pdfBlob = await pdf(<KeyReceiptPDF data={docData} />).toBlob();
+            }
+
+            if (pdfBlob) {
+                const url = URL.createObjectURL(pdfBlob);
+                setPreviewPdfUrl(url);
+                setShowDocPreview(true);
+            }
+        } catch (error) {
+            console.error("Preview Generation Error:", error);
+            toastError?.('Error al cargar la vista previa del documento');
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
+
+    const handleProceedToSign = () => {
+        setShowDocPreview(false);
+        // Revoke URL to free memory if needed, but keeping it for a sec is fine.
+        // URL.revokeObjectURL(previewPdfUrl); 
+        setSignatureModalOpen(true);
+    };
+
+    const handleSaveSignature = async (signatureDataUrl: string) => {
+        if (!signingProperty || !signingDocType || !user) return;
+        setIsGeneratingPdf(true);
+        setSignatureModalOpen(false);
+
+        try {
+            // 1. Upload Signature Image
+            const sigBlob = await (await fetch(signatureDataUrl)).blob();
+            const sigPath = `${user.id}/${signingProperty.id}/signatures/${signingDocType}_${Date.now()}.png`;
+            const { error: sigErr } = await supabase.storage
+                .from('documents')
+                .upload(sigPath, sigBlob);
+
+            if (sigErr) throw sigErr;
+
+            const { data: { publicUrl: signatureUrl } } = supabase.storage.from('documents').getPublicUrl(sigPath);
+
+            // 2. Fetch complete property data from property_submissions to get all form_data fields
+            const { data: submissionData } = await supabase
+                .from('property_submissions')
+                .select('form_data, type')
+                .eq('owner_id', user.id)
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            const fd = submissionData?.form_data || {};
+
+            // 3. Generate PDF with Signature - Complete data object
+            const docData = {
+                ...signingProperty,
+                ...(signingProperty.specs || {}),
+                ...fd, // Include all form_data fields
+                ownerName: user.name,
+                contact_email: user.email,
+                email: user.email,
+                phone: fd.phone || (signingProperty as any).phone,
+                signatureUrl: signatureDataUrl, // Use direct base64 for immediate PDF generation
+                // Property details from form_data
+                property_condition: fd.property_condition || fd.estado_inmueble,
+                age_status: fd.age_status,
+                age_years: fd.age_years,
+                mobiliario: fd.mobiliario || [],
+                maintenance_fee: fd.maintenance_fee || (signingProperty as any).maintenance_fee,
+                // Additional fields
+                rooms: fd.rooms || (signingProperty as any).rooms || signingProperty.specs?.beds,
+                bathrooms: fd.bathrooms || (signingProperty as any).bathrooms || signingProperty.specs?.baths,
+                half_bathrooms: fd.half_bathrooms,
+                parking_spots: fd.parking_spots || (signingProperty as any).parking_spots || signingProperty.specs?.parking,
+                construction_area: fd.construction_area,
+                land_area: fd.land_area,
+                levels: fd.levels,
+                features: fd.features || (signingProperty as any).features || [],
+                included_services: fd.included_services || [],
+                keys_provided: fd.keys_provided || (signingProperty as any).keys_provided,
+                ref: signingProperty.ref,
+                folio: signingProperty.ref
+            };
+
+            let pdfBlob = null;
+            if (signingDocType === 'recruitment') {
+                pdfBlob = await pdf(<RecruitmentPDF data={docData} mode={signingProperty.type as any} />).toBlob();
+            } else if (signingDocType === 'keys') {
+                pdfBlob = await pdf(<KeyReceiptPDF data={docData} />).toBlob();
+            }
+
+            if (!pdfBlob) throw new Error('Error al generar el PDF firmado');
+
+            // 4. Upload Signed PDF
+            const pdfPath = `${user.id}/${signingProperty.id}/${signingDocType}_signed_${Date.now()}.pdf`;
+            const { error: pdfErr } = await supabase.storage
+                .from('documents')
+                .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
+
+            if (pdfErr) throw pdfErr;
+
+            const { data: { publicUrl: pdfUrl } } = supabase.storage.from('documents').getPublicUrl(pdfPath);
+
+            // 5. Check if there's an existing PENDING document to UPDATE
+            const { data: existingDoc } = await supabase
+                .from('signed_documents')
+                .select('id')
+                .eq('property_id', signingProperty.id)
+                .eq('document_type', signingDocType)
+                .eq('status', 'pending')
+                .single();
+
+            let resultDoc;
+            if (existingDoc) {
+                // UPDATE existing document
+                const { data: updatedDoc, error: updateErr } = await supabase
+                    .from('signed_documents')
+                    .update({
+                        status: 'signed',
+                        signature_url: signatureUrl,
+                        pdf_url: pdfUrl,
+                        signed_at: new Date().toISOString()
+                    })
+                    .eq('id', existingDoc.id)
+                    .select()
+                    .single();
+
+                if (updateErr) throw updateErr;
+                resultDoc = updatedDoc;
+                console.log("Updated existing document:", resultDoc);
+            } else {
+                // INSERT new document (fallback if no pending doc exists)
+                const { data: newDoc, error: dbErr } = await supabase
+                    .from('signed_documents')
+                    .insert({
+                        property_id: signingProperty.id,
+                        user_id: user.id,
+                        document_type: signingDocType,
+                        status: 'signed',
+                        signature_url: signatureUrl,
+                        pdf_url: pdfUrl,
+                        signed_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+
+                if (dbErr) throw dbErr;
+                resultDoc = newDoc;
+                console.log("Inserted new document:", resultDoc);
+            }
+
+            // 6. Update Local State
+            if (existingDoc) {
+                // Update existing doc in state
+                setSignedDocs(prev => prev.map(d => d.id === existingDoc.id ? resultDoc : d));
+            } else {
+                // Add new doc to state
+                setSignedDocs(prev => [...prev, resultDoc]);
+            }
+
+            toastSuccess('Documento firmado y guardado correctamente');
+
+        } catch (error: any) {
+            console.error("Signing Error:", error);
+            toastError(`Error al firmar: ${error.message || 'Error desconocido'}`);
+        } finally {
+            setIsGeneratingPdf(false);
+            setSigningProperty(null);
+            setSigningDocType(null);
+        }
+    };
+
+
+    if (location.state && (location.state as any).openSelection) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300">
                 <div className="max-w-4xl w-full">
-                    <button onClick={() => setShowPropertyForm(null)} className="mb-8 flex items-center gap-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <button onClick={() => navigate('/client-portal')} className="mb-8 flex items-center gap-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
                         <span className="material-symbols-outlined">arrow_back</span>
                         <span className="text-xs font-black uppercase tracking-widest">Volver</span>
                     </button>
@@ -147,7 +382,7 @@ const ClientPortal: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <button
-                            onClick={() => setShowPropertyForm('sale')}
+                            onClick={() => navigate('/vender')}
                             className="group relative bg-white dark:bg-slate-900 p-12 rounded-[3rem] border border-slate-200 dark:border-white/5 hover:border-primary/30 transition-all hover:shadow-2xl hover:scale-[1.02] text-left"
                         >
                             <div className="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-[2rem] flex items-center justify-center text-green-500 mb-8 group-hover:scale-110 transition-transform">
@@ -158,7 +393,7 @@ const ClientPortal: React.FC = () => {
                         </button>
 
                         <button
-                            onClick={() => setShowPropertyForm('rent')}
+                            onClick={() => navigate('/rentar')}
                             className="group relative bg-white dark:bg-slate-900 p-12 rounded-[3rem] border border-slate-200 dark:border-white/5 hover:border-blue-500/30 transition-all hover:shadow-2xl hover:scale-[1.02] text-left"
                         >
                             <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 rounded-[2rem] flex items-center justify-center text-blue-500 mb-8 group-hover:scale-110 transition-transform">
@@ -233,32 +468,34 @@ const ClientPortal: React.FC = () => {
                     {activeSubmissions.length > 0 && (
                         <div className="mb-10 space-y-4">
                             {activeSubmissions.map(sub => (
-                                <div key={sub.id} className={`p-6 rounded-[2.5rem] border-2 flex flex-col sm:flex-row items-center justify-between gap-6 transition-all ${sub.status === 'changes_requested' ? 'bg-amber-500/10 border-amber-500 shadow-xl shadow-amber-500/20' : sub.status === 'pending' ? 'bg-blue-500/5 border-blue-500/30' : 'bg-primary/5 border-primary/20 shadow-lg'}`}>
+                                <div key={sub.id} className={`p-6 rounded-[2.5rem] border-2 flex flex-col sm:flex-row items-center justify-between gap-6 transition-all ${sub.status === 'changes_requested' ? 'bg-amber-500/10 border-amber-500 shadow-xl shadow-amber-500/20' : sub.status === 'pending' && !sub.is_signed ? 'bg-rose-500/10 border-rose-500 shadow-xl shadow-rose-500/10' : sub.status === 'pending' ? 'bg-blue-500/5 border-blue-500/30' : 'bg-primary/5 border-primary/20 shadow-lg'}`}>
                                     <div className="flex items-center gap-6">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${sub.status === 'changes_requested' ? 'bg-amber-500 text-white' : sub.status === 'pending' ? 'bg-blue-500 text-white' : 'bg-primary text-white'}`}>
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${sub.status === 'changes_requested' ? 'bg-amber-500 text-white' : sub.status === 'pending' && !sub.is_signed ? 'bg-rose-600 text-white animate-pulse' : sub.status === 'pending' ? 'bg-blue-500 text-white' : 'bg-primary text-white'}`}>
                                             <span className="material-symbols-rounded text-3xl">
-                                                {sub.status === 'changes_requested' ? 'emergency_home' : sub.status === 'pending' ? 'timer' : 'edit_note'}
+                                                {sub.status === 'changes_requested' ? 'emergency_home' : sub.status === 'pending' && !sub.is_signed ? 'ink_pen' : sub.status === 'pending' ? 'timer' : 'edit_note'}
                                             </span>
                                         </div>
                                         <div>
                                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
-                                                {sub.status === 'changes_requested' ? '¡Se requiere tu atención!' : sub.status === 'pending' ? 'En Revisión' : 'Continúa tu registro'}
+                                                {sub.status === 'changes_requested' ? '¡Se requiere tu atención!' : sub.status === 'pending' && !sub.is_signed ? '¡Falta tu Firma!' : sub.status === 'pending' ? 'En Revisión (Firmado)' : 'Continúa tu registro'}
                                             </h3>
                                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                                                 {sub.status === 'changes_requested'
                                                     ? 'Un asesor ha solicitado cambios en tu propiedad.'
-                                                    : sub.status === 'pending'
-                                                        ? 'Tu propiedad está siendo validada por nuestro equipo.'
-                                                        : `Tienes un borrador pendiente para ${sub.type === 'sale' ? 'venta' : 'renta'}.`}
+                                                    : sub.status === 'pending' && !sub.is_signed
+                                                        ? 'Debes firmar la documentación para que podamos publicar tu propiedad.'
+                                                        : sub.status === 'pending'
+                                                            ? 'Tu propiedad está siendo validada por nuestro equipo.'
+                                                            : `Tienes un borrador pendiente para ${sub.type === 'sale' ? 'venta' : 'renta'}.`}
                                             </p>
                                         </div>
                                     </div>
-                                    {sub.status !== 'pending' ? (
+                                    {sub.status !== 'pending' || (sub.status === 'pending' && !sub.is_signed) ? (
                                         <button
-                                            onClick={() => setShowPropertyForm(sub.type)}
-                                            className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${sub.status === 'changes_requested' ? 'bg-amber-500 text-white hover:scale-105 active:scale-95' : 'bg-primary text-white hover:shadow-glow'}`}
+                                            onClick={() => navigate(sub.type === 'sale' ? '/vender' : '/rentar')}
+                                            className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${sub.status === 'changes_requested' ? 'bg-amber-500 text-white hover:scale-105 active:scale-95' : sub.status === 'pending' && !sub.is_signed ? 'bg-rose-600 text-white hover:shadow-glow' : 'bg-primary text-white hover:shadow-glow'}`}
                                         >
-                                            {sub.status === 'changes_requested' ? 'Ver Comentarios' : 'Continuar Proceso'}
+                                            {sub.status === 'changes_requested' ? 'Ver Comentarios' : sub.status === 'pending' && !sub.is_signed ? 'Firmar Ahora' : 'Continuar Proceso'}
                                         </button>
                                     ) : (
                                         <div className="px-6 py-3 bg-blue-500/10 text-blue-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-blue-500/20">
@@ -276,28 +513,48 @@ const ClientPortal: React.FC = () => {
                             {loading ? (
                                 <div className="text-center py-20 text-slate-400">Cargando portafolio...</div>
                             ) : userProperties.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {/* Property Card */}
                                     {userProperties.map(prop => (
                                         <div key={prop.id} className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-4 border border-slate-200 dark:border-white/5 shadow-xl group hover:border-primary/30 transition-all">
                                             <div className="h-48 rounded-[2rem] bg-slate-100 overflow-hidden mb-4 relative">
                                                 <img src={prop.mainImage || 'https://via.placeholder.com/400'} className="w-full h-full object-cover" alt="" />
-                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-900">{prop.status}</span>
+                                                <div className="absolute top-3 right-3 flex gap-2">
+                                                    {(prop as any).is_submission && (
+                                                        <div className="bg-primary/90 backdrop-blur px-3 py-1 rounded-full animate-pulse shadow-lg">
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-white">En Revisión</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm border border-slate-100">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-900">{prop.status}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="px-2 pb-2">
                                                 <h3 className="font-extrabold text-lg uppercase tracking-tight text-slate-900 dark:text-white truncate">{prop.title}</h3>
                                                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate mb-4">{prop.address}</p>
-                                                <button onClick={() => navigate(`/property/${prop.id}`)} className="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-colors">
-                                                    Ver Detalles
+                                                <button
+                                                    onClick={() => {
+                                                        if ((prop as any).is_submission) {
+                                                            const fullSub = activeSubmissions.find(s => s.id === prop.id);
+                                                            if (fullSub) {
+                                                                setPreviewPropData(fullSub);
+                                                                setShowPropPreview(true);
+                                                            }
+                                                        } else {
+                                                            navigate(`/property/${prop.id}`);
+                                                        }
+                                                    }}
+                                                    className="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-colors"
+                                                >
+                                                    {(prop as any).is_submission ? 'Ver Borrador' : 'Ver Detalles'}
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
 
                                     {/* Add New Card */}
-                                    <button onClick={() => setShowPropertyForm('selection')} className="rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center justify-center p-8 gap-4 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group min-h-[300px]">
+                                    <button onClick={() => navigate('/client-portal', { state: { openSelection: true } })} className="rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center justify-center p-8 gap-4 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group min-h-[300px]">
                                         <span className="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">add_business</span>
                                         <span className="text-[10px] font-black uppercase tracking-widest">Agregar Propiedad</span>
                                     </button>
@@ -317,7 +574,7 @@ const ClientPortal: React.FC = () => {
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
                                         <button
-                                            onClick={() => setShowPropertyForm('sale')}
+                                            onClick={() => navigate('/vender')}
                                             className="group relative bg-slate-50 dark:bg-slate-800 p-8 rounded-[2.5rem] border border-transparent hover:border-primary/30 transition-all hover:shadow-xl"
                                         >
                                             <span className="material-symbols-outlined text-4xl mb-4 text-green-500">monetization_on</span>
@@ -326,7 +583,7 @@ const ClientPortal: React.FC = () => {
                                         </button>
 
                                         <button
-                                            onClick={() => setShowPropertyForm('rent')}
+                                            onClick={() => navigate('/rentar')}
                                             className="group relative bg-slate-50 dark:bg-slate-800 p-8 rounded-[2.5rem] border border-transparent hover:border-blue-500/30 transition-all hover:shadow-xl"
                                         >
                                             <span className="material-symbols-outlined text-4xl mb-4 text-blue-500">key</span>
@@ -379,10 +636,10 @@ const ClientPortal: React.FC = () => {
                                     </p>
                                     {userProperties.length === 0 && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-                                            <button onClick={() => setShowPropertyForm('sale')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                            <button onClick={() => navigate('/vender')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                                 Quiero Vender
                                             </button>
-                                            <button onClick={() => setShowPropertyForm('rent')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                            <button onClick={() => navigate('/rentar')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                                 Quiero Rentar
                                             </button>
                                         </div>
@@ -500,17 +757,17 @@ const ClientPortal: React.FC = () => {
                                         {userProperties.length > 0 ? 'Aún no hay inquilinos ni compradores' : 'Comienza tu viaje'}
                                     </h3>
                                     <p className="text-sm text-slate-500 leading-relaxed mb-8 max-w-md">
-                                        {userProperties.length > 0
+                                        {userProperties.some(p => !(p as any).is_submission)
                                             ? 'Tu propiedad ya está publicada. Te avisaremos aquí en cuanto alguien muestre interés.'
-                                            : 'Aún no has publicado ninguna propiedad. Carga tu inmueble hoy mismo.'}
+                                            : 'Tu propiedad está siendo validada. Podrás ver candidatos en cuanto sea publicada oficialmente.'}
                                     </p>
 
                                     {userProperties.length === 0 && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-                                            <button onClick={() => setShowPropertyForm('sale')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                            <button onClick={() => navigate('/vender')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                                 Quiero Vender
                                             </button>
-                                            <button onClick={() => setShowPropertyForm('rent')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                            <button onClick={() => navigate('/rentar')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                                 Quiero Rentar
                                             </button>
                                         </div>
@@ -536,10 +793,10 @@ const ClientPortal: React.FC = () => {
                                 <div className="text-center pt-6 border-t border-slate-100 dark:border-white/5">
                                     <p className="text-xs text-slate-400 uppercase tracking-widest mb-6">Aún no has publicado ninguna propiedad</p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
-                                        <button onClick={() => setShowPropertyForm('sale')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                        <button onClick={() => navigate('/vender')} className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                             Quiero Vender
                                         </button>
-                                        <button onClick={() => setShowPropertyForm('rent')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
+                                        <button onClick={() => navigate('/rentar')} className="px-6 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all">
                                             Quiero Rentar
                                         </button>
                                     </div>
@@ -560,107 +817,134 @@ const ClientPortal: React.FC = () => {
                                     ...userProperties.map(p => ({ ...p, source: 'property' }))
                                 ];
 
+                                const getSignedDoc = (prop: any, type: string) => {
+                                    // 1. Try to find in official signedDocs table
+                                    const official = signedDocs.find(d => d.property_id === prop.id && d.document_type === type && d.status === 'signed');
+                                    if (official) return official;
+
+                                    // 2. Fallback for submissions: check the property object itself (mapped from form_data)
+                                    if (prop.is_submission) {
+                                        if (type === 'recruitment' && prop.unsigned_recruitment_url) {
+                                            return { pdf_url: prop.unsigned_recruitment_url, status: 'signed' };
+                                        }
+                                        if (type === 'keys' && prop.unsigned_keys_url) {
+                                            return { pdf_url: prop.unsigned_keys_url, status: 'signed' };
+                                        }
+                                    }
+                                    return null;
+                                };
+
                                 return allItems.length > 0 ? (
                                     <div className="grid grid-cols-1 gap-6">
-                                        {allItems.map((prop: any) => (
-                                            <div key={prop.id} className="bg-white dark:bg-slate-900 rounded-[3rem] p-6 sm:p-8 border border-slate-200 dark:border-white/5 shadow-xl group hover:border-primary/20 transition-all flex flex-col lg:flex-row items-center gap-8 relative overflow-hidden">
-                                                {/* Decorative Background Accent */}
-                                                <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 dark:bg-slate-800/20 -mr-32 -mt-32 rounded-full z-0 opacity-50" />
+                                        {allItems.map((prop: any) => {
+                                            const recruitmentDoc = getSignedDoc(prop, 'recruitment');
+                                            const keysDoc = getSignedDoc(prop, 'keys');
+                                            const contractsDoc = getSignedDoc(prop, 'contract');
 
-                                                {/* Property Info Thumbnail */}
-                                                <div className="relative z-10 flex items-center gap-6 w-full lg:w-1/2">
-                                                    <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-[2rem] overflow-hidden shrink-0 border-4 border-white dark:border-slate-800 shadow-2xl group-hover:scale-105 transition-transform">
-                                                        <img src={prop.mainImage || 'https://via.placeholder.com/300'} className="w-full h-full object-cover" alt="" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className={`px-3 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${prop.type === 'rent' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
-                                                                {prop.type === 'rent' ? 'Renta' : 'Venta'}
-                                                            </span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">ID: {prop.ref || 'EN PROCESO'}</span>
-                                                            {prop.source === 'submission' && (
-                                                                <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[7px] font-black uppercase">Pendiente de Alta</span>
-                                                            )}
+                                            return (
+                                                <div key={prop.id} className="bg-white dark:bg-slate-900 rounded-[3rem] p-8 border border-slate-200 dark:border-white/5 shadow-xl group hover:border-primary/20 transition-all flex flex-col gap-8 relative overflow-hidden">
+                                                    {/* Header: Prop Info */}
+                                                    <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-white/5">
+                                                        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-[1.5rem] overflow-hidden shrink-0 border-2 border-slate-200 dark:border-white/10">
+                                                            <img src={prop.mainImage || 'https://via.placeholder.com/300'} className="w-full h-full object-cover" alt="" />
                                                         </div>
-                                                        <h3 className="font-black text-xl uppercase tracking-tight text-slate-900 dark:text-white truncate pr-4">{prop.title || 'Propiedad sin título'}</h3>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{prop.address || 'Ubicación pendiente'}</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Document Actions */}
-                                                <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full lg:w-1/2">
-                                                    {/* Recruitment PDF */}
-                                                    <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                const docData = {
-                                                                    ...prop,
-                                                                    ...(prop.form_data || {}), // Spread form_data to get fields like property_type if stuck there
-                                                                    ...(prop.specs || {}),
-                                                                    ownerName: user?.name,
-                                                                    mobiliario: prop.mobiliario || prop.form_data?.mobiliario || [],
-                                                                    features: prop.features || prop.form_data?.features || prop.services || [],
-                                                                    rooms: prop.specs?.beds || prop.rooms || prop.form_data?.rooms,
-                                                                    bathrooms: prop.specs?.baths || prop.bathrooms || prop.form_data?.bathrooms,
-                                                                    parking_spots: prop.specs?.parking || prop.parking_spots || prop.form_data?.parking_spots,
-                                                                    maintenance_fee: prop.maintenance_fee || prop.form_data?.maintenance_fee
-                                                                };
-                                                                const blob = await pdf(<RecruitmentPDF data={docData} mode={prop.type as any} />).toBlob();
-                                                                saveAs(blob, `Hoja_Reclutamiento_${(prop.title || 'Propiedad').replace(/\s+/g, '_')}.pdf`);
-                                                                toastSuccess?.('Hoja de Reclutamiento generada con éxito');
-                                                            } catch (err) {
-                                                                console.error('PDF Gen Error:', err);
-                                                                toastError?.('Error al generar el documento. Intenta de nuevo.');
-                                                            }
-                                                        }}
-                                                        className="flex-1 group/btn p-5 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border-2 border-slate-100 dark:border-white/5 hover:border-red-500/30 hover:bg-white dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-3 text-center"
-                                                    >
-                                                        <div className="w-12 h-12 bg-red-50 dark:bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 group-hover/btn:scale-110 transition-transform">
-                                                            <span className="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                                                        <div>
+                                                            <h3 className="font-black text-lg uppercase tracking-tight text-slate-900 dark:text-white mb-1">{prop.title}</h3>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{prop.ref || 'SIN FOLIO'}</p>
                                                         </div>
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-200">Hoja de Reclutamiento</span>
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Generar PDF Oficial</p>
-                                                    </button>
+                                                    </div>
 
-                                                    {/* Key Receipt PDF (Only for Rent) */}
-                                                    {prop.type === 'rent' && (
-                                                        <button
-                                                            onClick={async () => {
-                                                                try {
-                                                                    const docData = { ...prop, ...(prop.specs || {}), ownerName: user?.name };
-                                                                    const blob = await pdf(<KeyReceiptPDF data={docData} />).toBlob();
-                                                                    saveAs(blob, `Responsiva_Llaves_${(prop.title || 'Propiedad').replace(/\s+/g, '_')}.pdf`);
-                                                                    toastSuccess?.('Responsiva de Llaves generada con éxito');
-                                                                } catch (err) {
-                                                                    console.error('PDF Gen Error:', err);
-                                                                    toastError?.('Error al generar el documento.');
-                                                                }
-                                                            }}
-                                                            className="flex-1 group/btn p-5 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border-2 border-slate-100 dark:border-white/5 hover:border-blue-500/30 hover:bg-white dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-3 text-center"
-                                                        >
-                                                            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover/btn:scale-110 transition-transform">
-                                                                <span className="material-symbols-outlined text-2xl">vpn_key</span>
+                                                    {/* Documents List */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        {/* 1. Recruitment Sheet (Always) */}
+                                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col justify-between h-40">
+                                                            <div className="flex justify-between items-start">
+                                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${recruitmentDoc ? 'bg-green-500/10 text-green-500' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}>
+                                                                    <span className="material-symbols-outlined">description</span>
+                                                                </div>
+                                                                {recruitmentDoc && <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>}
                                                             </div>
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-200">Responsiva de Llaves</span>
-                                                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Documento de entrega</p>
-                                                        </button>
-                                                    )}
+                                                            <div>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white mb-1">Hoja de Reclutamiento</p>
+                                                                {recruitmentDoc ? (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (recruitmentDoc.pdf_url) {
+                                                                                window.open(recruitmentDoc.pdf_url, '_blank', 'noreferrer');
+                                                                            } else {
+                                                                                toastError?.('Documento no disponible aún.');
+                                                                            }
+                                                                        }}
+                                                                        className="text-[9px] font-bold text-green-500 hover:underline uppercase tracking-wider flex items-center gap-1"
+                                                                    >
+                                                                        Descargar PDF <span className="material-symbols-outlined text-[10px]">download</span>
+                                                                    </button>
+                                                                ) : (
+                                                                    <button onClick={() => handleSignClick(prop, 'recruitment')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wider flex items-center gap-1">
+                                                                        Firmar Ahora <span className="material-symbols-outlined text-[10px]">ink_pen</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 2. Key Receipt (Conditional) */}
+                                                        {(prop.keys_provided || prop.keysProvided) && (
+                                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col justify-between h-40">
+                                                                <div className="flex justify-between items-start">
+                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${keysDoc ? 'bg-green-500/10 text-green-500' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}>
+                                                                        <span className="material-symbols-outlined">key</span>
+                                                                    </div>
+                                                                    {keysDoc && <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white mb-1">Responsiva de Llaves</p>
+                                                                    {keysDoc ? (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                if (keysDoc.pdf_url) {
+                                                                                    window.open(keysDoc.pdf_url, '_blank', 'noreferrer');
+                                                                                } else {
+                                                                                    toastError?.('Documento no disponible aún.');
+                                                                                }
+                                                                            }}
+                                                                            className="text-[9px] font-bold text-green-500 hover:underline uppercase tracking-wider flex items-center gap-1"
+                                                                        >
+                                                                            Descargar PDF <span className="material-symbols-outlined text-[10px]">download</span>
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button onClick={() => handleSignClick(prop, 'keys')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wider flex items-center gap-1">
+                                                                            Firmar Ahora <span className="material-symbols-outlined text-[10px]">ink_pen</span>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 3. Contract (Sale Only) */}
+                                                        {prop.type === 'sale' && (
+                                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col justify-between h-40 opacity-50 cursor-not-allowed items-start relative">
+                                                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                                                    <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">Próximamente</span>
+                                                                </div>
+                                                                <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 text-xl">
+                                                                    <span className="material-symbols-outlined">gavel</span>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white mb-1">Contrato de Prestación</p>
+                                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pendiente de habilitar</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-20 border-2 border-dashed border-slate-200 dark:border-white/10 text-center">
-                                        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 text-slate-300">
-                                            <span className="material-symbols-outlined text-5xl">folder_off</span>
-                                        </div>
-                                        <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-2">Tu Carpeta está Vacía</h3>
-                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-                                            Aquí aparecerán los documentos oficiales de tus propiedades una vez que comiences el proceso de alta.
-                                        </p>
-                                    </div>
+                                    <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest text-xs">No hay documentos disponibles</div>
                                 );
                             })()}
+
                         </div>
                     )}
 
@@ -1017,7 +1301,98 @@ const ClientPortal: React.FC = () => {
                     )}
 
                 </main>
+
+                {/* PREVIEW MODAL */}
+                {showDocPreview && previewPdfUrl && (
+                    <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 animate-in fade-in duration-300">
+                        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-4xl h-[95vh] flex flex-col overflow-hidden shadow-[0_30px_70px_-12px_rgba(0,0,0,0.8)] border border-slate-200 dark:border-white/5 relative">
+                            {/* Header - Slimmer */}
+                            <div className="py-4 px-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-slate-900 z-10">
+                                <div>
+                                    <h3 className="text-base font-black uppercase tracking-tight text-slate-900 dark:text-white mb-0.5">
+                                        {signingDocType === 'recruitment' ? 'Hoja de Reclutamiento' : signingDocType === 'keys' ? 'Responsiva de Llaves' : 'Contrato'}
+                                    </h3>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Documento Oficial para Firma</p>
+                                </div>
+                                <button onClick={() => setShowDocPreview(false)} className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all hover:rotate-90">
+                                    <span className="material-symbols-outlined text-lg">close</span>
+                                </button>
+                            </div>
+
+                            <div className="flex-1 bg-slate-50 dark:bg-slate-950/30 p-2 md:p-4 overflow-hidden relative">
+                                <iframe
+                                    src={previewPdfUrl}
+                                    className="w-full h-full rounded-2xl border border-slate-200 dark:border-white/5 shadow-inner bg-white"
+                                    title="Document Preview"
+                                    style={{ height: '100%' }}
+                                />
+                            </div>
+
+                            {/* Footer Actions - Slimmer */}
+                            <div className="py-4 px-8 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center gap-4">
+                                <button
+                                    onClick={() => setShowDocPreview(false)}
+                                    className="px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleProceedToSign}
+                                    className="px-10 py-4 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                                >
+                                    <span className="material-symbols-outlined text-lg">ink_pen</span>
+                                    Proceder a Firmar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Signature Modal */}
+                <SignatureModal
+                    isOpen={signatureModalOpen}
+                    onClose={() => setSignatureModalOpen(false)}
+                    onSave={handleSaveSignature}
+                    title={signingDocType === 'recruitment' ? 'Hoja de Reclutamiento' : signingDocType === 'keys' ? 'Responsiva de Llaves' : 'Firmar Documento'}
+                    description="Por favor firma para aceptar los términos y generar el documento oficial."
+                />
+
+                {/* Loading Overlay */}
+                {isGeneratingPdf && (
+                    <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in">
+                        <span className="loader mb-8"></span>
+                        <h3 className="text-xl font-black uppercase tracking-tighter text-white">Generando Documento...</h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Firmando y guardando legalmente</p>
+                    </div>
+                )}
             </div>
+            {/* Property Draft Preview Modal */}
+            {showPropPreview && previewPropData && (
+                <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-6xl rounded-[3rem] shadow-3xl overflow-hidden flex flex-col max-h-[95vh] relative">
+                        <button
+                            onClick={() => setShowPropPreview(false)}
+                            className="absolute top-8 right-8 z-[210] w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-xl flex items-center justify-center text-slate-400 hover:text-red-500 transition-all font-bold"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+
+                        <div className="flex-1 overflow-y-auto p-8 sm:p-12 no-scrollbar">
+                            <div className="mb-10 text-center">
+                                <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20 mb-4 inline-block">
+                                    Vista Previa del Borrador
+                                </span>
+                                <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">Detalles de tu Solicitud</h2>
+                            </div>
+
+                            <PropertyPreview
+                                formData={previewPropData.form_data || {}}
+                                mode={previewPropData.type || 'rent'}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

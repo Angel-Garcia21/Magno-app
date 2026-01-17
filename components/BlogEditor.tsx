@@ -36,6 +36,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
     const [isUploading, setIsUploading] = useState(false);
     const [status, setStatus] = useState<'draft' | 'published'>(post?.status || 'draft');
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const mainImageRef = useRef<HTMLInputElement>(null);
 
     const addBlock = (type: BlogBlockType) => {
@@ -135,19 +136,27 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
 
     return (
         <div className="fixed inset-0 z-[300] bg-white dark:bg-slate-950 flex overflow-hidden font-poppins">
+            {/* Mobile Toggle */}
+            <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="fixed bottom-8 right-8 z-[350] w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center sm:hidden"
+            >
+                <span className="material-symbols-outlined">{isSidebarOpen ? 'close' : 'add'}</span>
+            </button>
+
             {/* Sidebar Tools */}
-            <aside className="w-80 border-r border-slate-100 dark:border-slate-800 flex flex-col bg-slate-50 dark:bg-slate-900/50">
+            <aside className={`fixed inset-y-0 left-0 z-[340] sm:relative w-80 border-r border-slate-100 dark:border-slate-800 flex flex-col bg-slate-50 dark:bg-slate-900/50 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}`}>
                 <div className="p-8 border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-xl font-black uppercase tracking-tighter">Editor Magno</h2>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Arrastra o pulsa para añadir</p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
                     <div className="grid grid-cols-2 gap-3">
                         {TOOLS.map((tool) => (
                             <button
                                 key={tool.type}
-                                onClick={() => addBlock(tool.type as BlogBlockType)}
+                                onClick={() => { addBlock(tool.type as BlogBlockType); if (window.innerWidth < 640) setIsSidebarOpen(false); }}
                                 className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary hover:shadow-xl transition-all group"
                             >
                                 <span className="material-symbols-outlined text-2xl text-slate-400 group-hover:text-primary mb-2">{tool.icon}</span>
@@ -185,7 +194,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
             {/* Main Content Area */}
             <main
                 onClick={() => setSelectedBlockId(null)}
-                className="flex-1 overflow-y-auto bg-white dark:bg-slate-950 p-12 md:p-24 selection:bg-primary/20"
+                className="flex-1 overflow-y-auto bg-white dark:bg-slate-950 p-6 sm:p-12 md:p-24 selection:bg-primary/20"
             >
                 <div className="max-w-4xl mx-auto space-y-12 pb-40">
                     {/* Header Editor */}
@@ -202,7 +211,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="TÍTULO DEL ARTÍCULO"
                                 rows={2}
-                                className="w-full bg-transparent border-none text-5xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 dark:text-white placeholder:text-slate-100 focus:ring-0 p-0 overflow-hidden resize-none leading-[0.9]"
+                                className="w-full bg-transparent border-none text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter text-slate-900 dark:text-white placeholder:text-slate-100 focus:ring-0 p-0 overflow-hidden resize-none leading-[0.9]"
                             />
                         </div>
 

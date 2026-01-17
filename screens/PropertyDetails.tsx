@@ -257,9 +257,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
-            <span className="material-symbols-outlined text-lg">share</span>
-          </button>
+
         </div>
       </header>
 
@@ -364,7 +362,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                 <SpecMini icon="bed" value={property.specs.beds} label="Recs" />
                 <SpecMini icon="bathtub" value={property.specs.baths} label="Baños" />
                 <SpecMini icon="square_foot" value={property.specs.area} label="Construcción" />
@@ -619,8 +617,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Origen de Ingresos</label>
                             <select value={appData.incomeSource} onChange={(e) => setAppData({ ...appData, incomeSource: e.target.value })} className="w-full h-14 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/20 rounded-2xl px-5 font-bold outline-none">
                               <option value="payroll">Nómina</option>
-                              <option value="cash">Efectivo</option>
-                              <option value="other">Otro</option>
+                              <option value="bank_statements">Estados de Cuenta</option>
                             </select>
                           </div>
                           <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-[2rem]">
@@ -675,8 +672,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Origen de ingresos</label>
                             <select value={appData.incomeSource} onChange={(e) => setAppData({ ...appData, incomeSource: e.target.value })} className="w-full h-14 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/20 rounded-2xl px-5 font-bold outline-none">
                               <option value="payroll">Nómina</option>
-                              <option value="cash">Efectivo</option>
-                              <option value="other">Otro</option>
+                              <option value="bank_statements">Estados de Cuenta</option>
                             </select>
                           </div>
                           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
@@ -747,7 +743,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
                           {[
                             {
                               id: 1,
-                              title: "Investigación Legal y Buró ($950)",
+                              title: "Investigación Legal y Buró ($1,050)",
                               desc: "Se realiza una investigación profunda de antecedentes legales y crediticios. El pago se realiza después de ver la propiedad para apartarla.",
                               icon: "policy"
                             },
@@ -760,7 +756,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
                             {
                               id: 3,
                               title: "Convenio de Justicia Alternativa",
-                              desc: "Protección legal para ambas partes. Costo de $4,000, se paga al firmar el contrato (incluye Obligado Solidario).",
+                              desc: "Protección legal para ambas partes. Costo de $4,500, se paga al firmar el contrato (incluye Obligado Solidario).",
                               icon: "gavel"
                             },
                             {
