@@ -2039,7 +2039,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
         {/* Sidebar: Premium Luxury Style */}
         <aside className={`bg-[#020617] text-white p-6 fixed inset-y-0 left-0 md:sticky md:top-0 md:h-screen flex flex-col z-[95] transition-all duration-500 ease-in-out shadow-2xl ${!isSidebarCollapsed
-          ? 'translate-x-0 w-full md:w-80'
+          ? 'translate-x-0 w-64 sm:w-80'
           : '-translate-x-full md:translate-x-0 md:w-24 px-4'
           }`}>
 

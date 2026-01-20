@@ -247,7 +247,7 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Animated Scroll Text: SANDY GOLD HIGHLIGHT */}
-                <div className="py-20 flex justify-center">
+                <div className="py-10 sm:py-20 flex justify-center">
                     <h2
                         className="text-[clamp(2.5rem,10vw,8rem)] font-black uppercase tracking-tighter text-center leading-[0.85] transition-all duration-700"
                         style={{
