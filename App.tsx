@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { Property, TimelineEvent, User } from './types';
 import { ALL_PROPERTIES, INITIAL_TIMELINE } from './constants';
@@ -298,6 +299,7 @@ const App: React.FC = () => {
       <AuthProvider>
         <ToastProvider>
           <Router>
+            <ScrollToTop />
             <AppContent />
           </Router>
         </ToastProvider>
