@@ -73,7 +73,7 @@ const AboutMagno: React.FC = () => {
                 }}
             />
 
-            <div className="max-w-7xl mx-auto space-y-40 relative z-10">
+            <div className="max-w-7xl mx-auto space-y-16 sm:space-y-40 relative z-10">
 
                 {/* Hero: MAGNIFÍCATE (Luxury Optimization) */}
                 <div className="relative min-h-[60vh] flex flex-col items-center justify-center text-center">
@@ -105,26 +105,26 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Qué Somos: Logo-Centric 3D Stack */}
-                <div className="grid lg:grid-cols-2 gap-24 items-center">
-                    <div className="relative h-[450px] md:h-[600px] group flex items-center justify-center">
-                        <div className="relative w-full max-w-[400px] aspect-square">
+                <div className="grid lg:grid-cols-2 gap-12 sm:gap-24 items-center">
+                    <div className="relative h-[280px] sm:h-[450px] md:h-[600px] group flex items-center justify-center">
+                        <div className="relative w-full max-w-[240px] sm:max-w-[400px] aspect-square">
                             {/* Background Ambient Layer */}
-                            <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/10 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-[4rem] rotate-12 translate-y-16 transition-all duration-1000 group-hover:rotate-0 group-hover:translate-y-0" />
+                            <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/10 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-[2.5rem] sm:rounded-[4rem] rotate-12 translate-y-8 sm:translate-y-16 transition-all duration-1000 group-hover:rotate-0 group-hover:translate-y-0" />
 
                             {/* Interactive Foundation Layer - Gold Themed */}
-                            <div className="absolute inset-0 bg-white/60 dark:bg-gradient-to-br dark:from-amber-600/10 dark:to-amber-500/10 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/20 rounded-[4rem] -rotate-6 translate-y-8 group-hover:rotate-0 group-hover:translate-y-0 transition-all duration-1000 flex flex-col items-center justify-center p-12 text-center gap-6">
-                                <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-4xl text-amber-600">shield</span>
+                            <div className="absolute inset-0 bg-white/60 dark:bg-gradient-to-br dark:from-amber-600/10 dark:to-amber-500/10 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/20 rounded-[2.5rem] sm:rounded-[4rem] -rotate-6 translate-y-4 sm:translate-y-8 group-hover:rotate-0 group-hover:translate-y-0 transition-all duration-1000 flex flex-col items-center justify-center p-6 sm:p-12 text-center gap-3 sm:gap-6">
+                                <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl sm:text-4xl text-amber-600">shield</span>
                                 </div>
-                                <h4 className="text-xl font-bold uppercase text-slate-900 dark:text-white tracking-[0.2em]">Magno Security</h4>
+                                <h4 className="text-sm sm:text-xl font-bold uppercase text-slate-900 dark:text-white tracking-[0.2em]">Magno Security</h4>
                             </div>
 
                             {/* Top Executive Layer: Logo Focus */}
-                            <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-2 border-amber-500/40 rounded-[4rem] shadow-2xl dark:shadow-glow flex flex-col items-center justify-center p-12 -translate-x-6 -translate-y-6 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-1000 overflow-hidden">
+                            <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-2 border-amber-500/40 rounded-[2.5rem] sm:rounded-[4rem] shadow-2xl dark:shadow-glow flex flex-col items-center justify-center p-6 sm:p-12 -translate-x-3 -translate-y-3 sm:-translate-x-6 sm:-translate-y-6 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-1000 overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-50" />
-                                <div className="relative z-10 flex flex-col items-center gap-6">
+                                <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-6">
                                     {/* Magno Lion Logo */}
-                                    <div className="relative w-32 h-32 flex items-center justify-center">
+                                    <div className="relative w-16 h-16 sm:w-32 sm:h-32 flex items-center justify-center">
                                         <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-2xl animate-pulse" />
                                         <img
                                             src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png"
@@ -132,10 +132,10 @@ const AboutMagno: React.FC = () => {
                                             className="w-full h-full object-contain brightness-0 dark:brightness-100 group-hover:scale-110 transition-transform duration-700"
                                         />
                                     </div>
-                                    <div className="text-center space-y-2">
-                                        <h3 className="text-3xl font-black uppercase tracking-widest text-slate-900 dark:text-white">MAGNO</h3>
-                                        <div className="w-16 h-1 bg-amber-500 mx-auto rounded-full" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 dark:text-amber-500">Estándar de Lujo</p>
+                                    <div className="text-center space-y-1 sm:space-y-2">
+                                        <h3 className="text-xl sm:text-3xl font-black uppercase tracking-widest text-slate-900 dark:text-white">MAGNO</h3>
+                                        <div className="w-12 h-0.5 sm:w-16 sm:h-1 mx-auto bg-amber-500 rounded-full" />
+                                        <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 dark:text-amber-500">Estándar de Lujo</p>
                                     </div>
                                 </div>
                             </div>
@@ -181,31 +181,31 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Qué Hacemos: Soluciones (Original Texts) */}
-                <div className="space-y-24">
+                <div className="space-y-12 sm:space-y-24">
                     <div className="text-center space-y-4">
                         <h2 className="text-sm font-black uppercase tracking-[0.6em] text-primary">Nuestras Soluciones</h2>
                         <h3 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">QUÉ HACEMOS</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                         {/* Renta y Admin */}
                         <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[400px] sm:min-h-[480px]">
                             <div className="space-y-8 relative z-10 flex-1">
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">vpn_key</span>
                                 </div>
-                                <h4 className="text-sm sm:text-2xl font-black uppercase text-slate-900 dark:text-white">1. Renta y Administración</h4>
-                                <ul className="space-y-2 sm:space-y-4">
+                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">1. Renta y Administración</h4>
+                                <ul className="space-y-4">
                                     {['Promoción estratégica', 'Filtros reales para tu inmueble', 'Investigación completa de inquilino', 'Proceso de firma con orden'].map((li, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 sm:gap-3 text-[9px] sm:text-xs text-slate-600 dark:text-slate-400 font-bold">
-                                            <span className="material-symbols-outlined text-sm sm:text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
                                             {li}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                            <div className="mt-4 sm:mt-8 pt-4 sm:pt-8 border-t border-slate-200 dark:border-white/5">
-                                <p className="text-[7px] sm:text-[10px] font-black uppercase text-amber-600 tracking-widest text-center">Seguridad Patrimonial</p>
+                            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/5">
+                                <p className="text-[10px] font-black uppercase text-amber-600 tracking-widest text-center">Seguridad Patrimonial</p>
                             </div>
                         </div>
 
@@ -215,11 +215,11 @@ const AboutMagno: React.FC = () => {
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-500 rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">sell</span>
                                 </div>
-                                <h4 className="text-sm sm:text-2xl font-black uppercase text-slate-900 dark:text-white">2. Venta con Estrategia</h4>
-                                <ul className="space-y-2 sm:space-y-4">
+                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">2. Venta con Estrategia</h4>
+                                <ul className="space-y-4">
                                     {['Opinión de valor sustentada', 'Análisis legal y fiscal', 'Promoción estratégica', 'Presentación y negociación clara', 'Acompañamiento hasta el cierre'].map((li, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 sm:gap-3 text-[9px] sm:text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                            <span className="material-symbols-outlined text-sm sm:text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
                                             {li}
                                         </li>
                                     ))}
@@ -234,12 +234,12 @@ const AboutMagno: React.FC = () => {
                                 <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">smart_toy</span>
                                 </div>
-                                <h4 className="text-sm sm:text-2xl font-black uppercase text-white">3. Operación Digital</h4>
-                                <p className="text-[10px] sm:text-sm text-slate-300 leading-relaxed font-bold">
+                                <h4 className="text-2xl font-black uppercase text-white">3. Operación Digital</h4>
+                                <p className="text-sm text-slate-300 leading-relaxed font-bold">
                                     Somos pioneros en la automatización y uso de IA para el manejo seguro de tu inmueble. Herramientas a la vanguardia para que tu proceso sea seguro y sin fricción.
                                 </p>
-                                <div className="p-2 sm:p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-amber-500 text-center">IA + Automatización</p>
+                                <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 text-center">IA + Automatización</p>
                                 </div>
                             </div>
                         </div>
@@ -247,7 +247,7 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Animated Scroll Text: SANDY GOLD HIGHLIGHT */}
-                <div className="py-10 sm:py-20 flex justify-center">
+                <div className="py-2 sm:py-20 flex justify-center">
                     <h2
                         className="text-[clamp(2.5rem,10vw,8rem)] font-black uppercase tracking-tighter text-center leading-[0.85] transition-all duration-700"
                         style={{
@@ -269,22 +269,22 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Vision & Values: GOLD HIGHLIGHTS (Anti-Italic) */}
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-32 items-start -mt-10 sm:mt-0">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-32 items-start -mt-8 sm:mt-0">
                     <div className="space-y-8 sm:space-y-12 text-center lg:text-left">
                         <div className="space-y-4 sm:space-y-6">
                             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary">A Dónde Vamos</h2>
-                            <h3 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-slate-900 dark:text-white leading-[0.9] tracking-tighter">
+                            <h3 className="text-3xl md:text-5xl font-black uppercase text-slate-900 dark:text-white leading-[0.9] tracking-tighter">
                                 Estándar de servicio:<br />
                                 <span className="text-amber-500">Rápido, Claro y Estructurado</span>
                             </h3>
                         </div>
-                        <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-display">
+                        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-display max-w-2xl mx-auto lg:mx-0">
                             Magnificamos una plataforma donde propietarios y clientes puedan ver, decidir y firmar con orden; y donde cada propiedad se opere como debe: con procesos, evidencia y resultados.
                         </p>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-3xl p-6 sm:p-12 rounded-[2.5rem] sm:rounded-[4rem] border border-slate-200 dark:border-white/10 space-y-8 sm:space-y-10 text-center sm:text-left">
-                        <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.5em] text-primary mb-4 sm:mb-8">Nuestros Valores</h2>
+                    <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-3xl p-12 rounded-[4rem] border border-slate-200 dark:border-white/10 space-y-10">
+                        <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary mb-8">Nuestros Valores</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             {[
                                 { t: 'Magnificar', d: 'Brindar la mayor cantidad de valor posible.' },
