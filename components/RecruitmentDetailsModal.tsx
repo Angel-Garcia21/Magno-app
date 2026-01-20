@@ -40,12 +40,12 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={onClose} />
 
-            <div className="relative bg-white dark:bg-slate-900 w-full max-w-7xl max-h-[95vh] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col border border-white/10">
+            <div className="relative bg-white dark:bg-slate-900 w-[95%] sm:w-full max-w-7xl max-h-[95vh] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-2xl flex flex-col border border-white/10">
                 {/* Header */}
-                <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white dark:bg-slate-950">
-                    <h2 className="text-xl font-bold dark:text-white flex items-center gap-2">
-                        <span className="material-symbols-outlined text-amber-500">visibility</span>
-                        Vista Previa de Solicitud ({isRent ? 'Renta' : 'Venta'})
+                <div className="p-3 sm:p-4 border-b border-white/10 flex items-center justify-between bg-white dark:bg-slate-950">
+                    <h2 className="text-base sm:text-xl font-bold dark:text-white flex items-center gap-2">
+                        <span className="material-symbols-outlined text-amber-500 text-lg sm:text-2xl">visibility</span>
+                        Vista Previa ({isRent ? 'Renta' : 'Venta'})
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
                         <span className="material-symbols-outlined dark:text-white">close</span>
@@ -54,7 +54,7 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
 
                 <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
                     {/* Left Panel: Files & Data Summary */}
-                    <div className="w-full md:w-1/3 bg-slate-50 dark:bg-slate-900/50 p-6 overflow-y-auto border-r border-white/5">
+                    <div className="w-full md:w-1/3 bg-slate-50 dark:bg-slate-900/50 p-4 sm:p-6 overflow-y-auto border-r border-white/5">
                         <div className="space-y-6">
                             {/* Signature Status Banner */}
                             {!recruitment.is_signed && recruitment.status === 'pending' && (
@@ -71,8 +71,8 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
 
                             {/* Marketing Data Edit Section */}
                             <div className="space-y-2">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-sm">edit_note</span>
+                                <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-xs sm:text-sm">edit_note</span>
                                     Datos de Marketing
                                 </h3>
                                 <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5 space-y-4">
@@ -292,7 +292,7 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t border-white/10 bg-white dark:bg-slate-950 flex flex-col sm:flex-row justify-end gap-3">
+                <div className="p-3 sm:p-4 border-t border-white/10 bg-white dark:bg-slate-950 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                     {recruitment.status === 'pending' && (
                         <>
                             <button

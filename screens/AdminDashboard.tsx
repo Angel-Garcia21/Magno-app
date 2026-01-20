@@ -2138,7 +2138,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
               </div>
             </div>
 
-            <div className="flex items-center gap-2 lg:gap-3 w-full lg:w-auto shrink-0 justify-end">
+            <div className="flex flex-wrap items-center gap-2 lg:gap-3 w-full lg:w-auto shrink-0 justify-start sm:justify-end">
               {/* Notification Bell */}
               <button
                 type="button"
@@ -2171,7 +2171,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                 type="button"
                 onClick={(e) => { e.preventDefault(); handleTokkoSync(); }}
                 disabled={isSyncing}
-                className={`flex items-center justify-center gap-2 px-4 py-4 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest shadow-2xl transition-all active:scale-95 ${isSyncing ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-900 hover:bg-slate-50 border border-slate-100 shadow-xl'
+                className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-3 sm:py-4 rounded-[1.5rem] sm:rounded-[2.5rem] font-black text-[9px] sm:text-[10px] uppercase tracking-widest shadow-2xl transition-all active:scale-95 ${isSyncing ? 'bg-slate-200 text-slate-400' : 'bg-white text-slate-900 hover:bg-slate-50 border border-slate-100 shadow-xl'
                   }`}
               >
                 <span className={`material-symbols-outlined text-sm ${isSyncing ? 'animate-spin' : ''}`}>refresh</span>
@@ -2200,7 +2200,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                         contractEndDate: '', linkedName: '', phoneContact: ''
                       });
                     }}
-                    className="bg-green-600 text-white px-6 py-5 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-green-700 transition-all flex items-center gap-2"
+                    className="bg-green-600 text-white px-4 sm:px-6 py-3 sm:py-5 rounded-[1.5rem] sm:rounded-[2.5rem] font-black text-[9px] sm:text-[10px] uppercase tracking-widest shadow-2xl hover:bg-green-700 transition-all flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base">person_add</span>
                     Inquilino
@@ -2217,7 +2217,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                         contractEndDate: '', linkedName: '', phoneContact: ''
                       });
                     }}
-                    className="bg-amber-500 text-white px-6 py-5 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-amber-600 transition-all flex items-center gap-2"
+                    className="bg-amber-500 text-white px-4 sm:px-6 py-3 sm:py-5 rounded-[1.5rem] sm:rounded-[2.5rem] font-black text-[9px] sm:text-[10px] uppercase tracking-widest shadow-2xl hover:bg-amber-600 transition-all flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-base">real_estate_agent</span>
                     Propietario
@@ -2321,11 +2321,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                      {/* Vertical Divider */}
-                      <div className="w-px h-20 bg-slate-100 dark:bg-slate-800" />
+                    <div className="flex items-center gap-3 sm:gap-6">
+                      <div className="hidden sm:block w-px h-20 bg-slate-100 dark:bg-slate-800" />
 
-                      <div className="grid grid-cols-2 gap-3 min-w-[120px]">
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3 min-w-[100px] sm:min-w-[120px]">
                         {p.status === PropertyStatus.AVAILABLE ? (
                           <button
                             type="button"
