@@ -203,7 +203,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setActiveImageIdx(null)}>
           <button
             onClick={() => setActiveImageIdx(null)}
-            className="absolute top-safe right-6 mt-6 text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-50 border border-white/10"
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-50 border border-white/10"
           >
             <span className="material-symbols-outlined text-2xl sm:text-3xl">close</span>
           </button>
@@ -230,7 +230,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
               e.stopPropagation();
               setActiveImageIdx(prev => (prev === null || prev === displayImages.length - 1) ? 0 : prev + 1);
             }}
-            className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/5"
+            className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/5"
           >
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
@@ -252,7 +252,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary truncate px-4">{property.title}</p>
           <div className="absolute right-0 top-1/2 -translate-y-1/2">
             <button onClick={() => navigate('/')} className="transition-transform hover:scale-110 active:scale-95">
-              <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-12 h-12 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
+              <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-10 h-10 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
             </button>
           </div>
         </div>
@@ -261,7 +261,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
 
           {/* Left Column: Media Hub */}

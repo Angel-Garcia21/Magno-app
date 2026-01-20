@@ -142,7 +142,7 @@ const AboutMagno: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 sm:gap-4">
                         {[
                             {
                                 title: "Tecnología + Proceso",
@@ -163,16 +163,16 @@ const AboutMagno: React.FC = () => {
                                 color: "text-red-500"
                             }
                         ].map((item, i) => (
-                            <div key={i} className="group p-8 rounded-[3rem] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-primary/20 transition-all duration-500">
-                                <div className="flex items-center gap-8">
-                                    <div className={`w-14 h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center ${item.color} group-hover:scale-110 shadow-sm dark:shadow-none transition-transform duration-500`}>
-                                        <span className="material-symbols-outlined text-3xl">{item.icon}</span>
+                            <div key={i} className="group p-4 sm:p-8 rounded-[2rem] sm:rounded-[3rem] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-primary/20 transition-all duration-500">
+                                <div className="flex items-center gap-4 sm:gap-8">
+                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center ${item.color} group-hover:scale-110 shadow-sm dark:shadow-none transition-transform duration-500`}>
+                                        <span className="material-symbols-outlined text-2xl sm:text-3xl">{item.icon}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-xl font-black uppercase text-slate-900 dark:text-white tracking-tight mb-1">
+                                        <h4 className="text-base sm:text-xl font-black uppercase text-slate-900 dark:text-white tracking-tight mb-1">
                                             {item.title}
                                         </h4>
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">{item.desc}</p>
                                     </div>
                                 </div>
                             </div>
@@ -187,9 +187,9 @@ const AboutMagno: React.FC = () => {
                         <h3 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">QUÉ HACEMOS</h3>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                         {/* Renta y Admin */}
-                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-10 rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[480px]">
+                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[400px] sm:min-h-[480px]">
                             <div className="space-y-8 relative z-10 flex-1">
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">vpn_key</span>
@@ -210,7 +210,7 @@ const AboutMagno: React.FC = () => {
                         </div>
 
                         {/* Venta con Estrategia */}
-                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-10 rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[480px]">
+                        <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[400px] sm:min-h-[480px]">
                             <div className="space-y-8 relative z-10 flex-1">
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-500 rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">sell</span>
@@ -228,7 +228,7 @@ const AboutMagno: React.FC = () => {
                         </div>
 
                         {/* Operación Digital - Gold Accent */}
-                        <div className="group relative bg-[#0B1120] p-10 rounded-[3.5rem] border-2 border-amber-500/30 shadow-xl overflow-hidden flex flex-col min-h-[480px]">
+                        <div className="group relative bg-[#0B1120] p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border-2 border-amber-500/30 shadow-xl overflow-hidden flex flex-col min-h-[400px] sm:min-h-[480px]">
                             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent" />
                             <div className="relative z-10 space-y-8 flex-1">
                                 <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">

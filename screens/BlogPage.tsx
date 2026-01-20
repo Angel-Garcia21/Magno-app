@@ -33,13 +33,13 @@ const BlogPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-32 bg-slate-50 dark:bg-[#020617] font-poppins">
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#101622]/95 backdrop-blur-md px-6 sm:px-10 pt-16 pb-10 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-6">
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#101622]/95 backdrop-blur-md px-6 sm:px-10 pt-8 sm:pt-16 pb-6 sm:pb-10 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4 sm:gap-6">
         <div>
-          <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter">Magno <span className="text-primary">Blog</span></h1>
+          <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter">Magno <span className="text-primary">Blog</span></h1>
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2">Noticias y tendencias del sector inmobiliario</p>
         </div>
         <button onClick={() => navigate('/')} className="transition-transform hover:scale-110 active:scale-95 shrink-0">
-          <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-12 h-12 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
+          <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="w-10 h-10 sm:w-16 sm:h-16 object-contain brightness-75 dark:brightness-100" />
         </button>
       </header>
 
