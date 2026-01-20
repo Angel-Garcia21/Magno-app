@@ -43,42 +43,42 @@ const BlogPage: React.FC = () => {
         </button>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 py-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-10 py-10 sm:py-16">
         {posts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 md:gap-12 lg:gap-16">
             {posts.map((post, index) => (
               <div
                 key={post.id}
                 onClick={() => navigate(`/blog/${post.slug}`)}
-                className={`group cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-500 delay-${Math.min(index * 100, 500)} bg-white dark:bg-slate-900 rounded-[3.5rem] overflow-hidden shadow-soft hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-white/5 flex flex-col`}
+                className={`group cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-500 delay-${Math.min(index * 100, 500)} bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[3.5rem] overflow-hidden shadow-soft hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-white/5 flex flex-col`}
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img src={post.main_image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={post.title} />
-                  <div className="absolute top-6 left-6 flex gap-2">
-                    <span className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-md text-primary text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-primary/10 shadow-sm">
+                  <div className="absolute top-3 sm:top-6 left-3 sm:left-6 flex flex-wrap gap-1 sm:gap-2">
+                    <span className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-md text-primary text-[6px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 sm:py-1.5 rounded-full border border-primary/10 shadow-sm">
                       {post.category || 'Noticias'}
                     </span>
                     {index === 0 && (
-                      <span className="bg-primary text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-glow animate-pulse">Destacado</span>
+                      <span className="bg-primary text-white text-[6px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-glow animate-pulse">Destacado</span>
                     )}
                   </div>
                 </div>
-                <div className="p-8 md:p-10 flex flex-col flex-1">
-                  <h4 className="font-black text-2xl uppercase tracking-tighter leading-tight mb-4 group-hover:text-primary transition-colors line-clamp-2">{post.title}</h4>
-                  <div className="mt-auto flex items-center justify-between pt-6 border-t border-slate-50 dark:border-white/5">
-                    <div className="flex items-center gap-4">
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</p>
-                      <span className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-widest border-l border-slate-100 dark:border-white/10 pl-4">
+                <div className="p-4 sm:p-8 md:p-10 flex flex-col flex-1">
+                  <h4 className="font-black text-xs sm:text-2xl uppercase tracking-tighter leading-tight mb-2 sm:mb-4 group-hover:text-primary transition-colors line-clamp-2">{post.title}</h4>
+                  <div className="mt-auto flex items-center justify-between pt-3 sm:pt-6 border-t border-slate-50 dark:border-white/5">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <p className="text-[7px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</p>
+                      <span className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-widest border-l border-slate-100 dark:border-white/10 pl-4">
                         <span className="material-symbols-outlined text-sm">menu_book</span>
                         5 MIN
                       </span>
-                      <div className="flex items-center gap-0.5 ml-1">
+                      <div className="hidden sm:flex items-center gap-0.5 ml-1">
                         {[1, 2, 3, 4, 5].map(s => (
                           <span key={s} className="material-symbols-outlined text-xs text-amber-500 fill-1">star</span>
                         ))}
                       </div>
                     </div>
-                    <span className="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined text-primary text-sm sm:text-base group-hover:translate-x-2 transition-transform">arrow_forward</span>
                   </div>
                 </div>
               </div>

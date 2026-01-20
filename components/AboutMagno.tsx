@@ -187,25 +187,25 @@ const AboutMagno: React.FC = () => {
                         <h3 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">QUÉ HACEMOS</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
                         {/* Renta y Admin */}
                         <div className="group relative bg-slate-50 dark:bg-[#0d1525] p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-amber-900/10 transition-all duration-700 flex flex-col min-h-[400px] sm:min-h-[480px]">
                             <div className="space-y-8 relative z-10 flex-1">
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">vpn_key</span>
                                 </div>
-                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">1. Renta y Administración</h4>
-                                <ul className="space-y-4">
+                                <h4 className="text-sm sm:text-2xl font-black uppercase text-slate-900 dark:text-white">1. Renta y Administración</h4>
+                                <ul className="space-y-2 sm:space-y-4">
                                     {['Promoción estratégica', 'Filtros reales para tu inmueble', 'Investigación completa de inquilino', 'Proceso de firma con orden'].map((li, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-bold">
-                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                        <li key={idx} className="flex items-start gap-2 sm:gap-3 text-[9px] sm:text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                            <span className="material-symbols-outlined text-sm sm:text-[18px] text-amber-500 shrink-0">check_circle</span>
                                             {li}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/5">
-                                <p className="text-[10px] font-black uppercase text-amber-600 tracking-widest text-center">Seguridad Patrimonial</p>
+                            <div className="mt-4 sm:mt-8 pt-4 sm:pt-8 border-t border-slate-200 dark:border-white/5">
+                                <p className="text-[7px] sm:text-[10px] font-black uppercase text-amber-600 tracking-widest text-center">Seguridad Patrimonial</p>
                             </div>
                         </div>
 
@@ -215,11 +215,11 @@ const AboutMagno: React.FC = () => {
                                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-500 rounded-2xl flex items-center justify-center group-hover:-rotate-12 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">sell</span>
                                 </div>
-                                <h4 className="text-2xl font-black uppercase text-slate-900 dark:text-white">2. Venta con Estrategia</h4>
-                                <ul className="space-y-4">
+                                <h4 className="text-sm sm:text-2xl font-black uppercase text-slate-900 dark:text-white">2. Venta con Estrategia</h4>
+                                <ul className="space-y-2 sm:space-y-4">
                                     {['Opinión de valor sustentada', 'Análisis legal y fiscal', 'Promoción estratégica', 'Presentación y negociación clara', 'Acompañamiento hasta el cierre'].map((li, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                            <span className="material-symbols-outlined text-[18px] text-amber-500 shrink-0">check_circle</span>
+                                        <li key={idx} className="flex items-start gap-2 sm:gap-3 text-[9px] sm:text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                            <span className="material-symbols-outlined text-sm sm:text-[18px] text-amber-500 shrink-0">check_circle</span>
                                             {li}
                                         </li>
                                     ))}
@@ -234,12 +234,12 @@ const AboutMagno: React.FC = () => {
                                 <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-outlined text-3xl">smart_toy</span>
                                 </div>
-                                <h4 className="text-2xl font-black uppercase text-white">3. Operación Digital</h4>
-                                <p className="text-sm text-slate-300 leading-relaxed font-bold">
+                                <h4 className="text-sm sm:text-2xl font-black uppercase text-white">3. Operación Digital</h4>
+                                <p className="text-[10px] sm:text-sm text-slate-300 leading-relaxed font-bold">
                                     Somos pioneros en la automatización y uso de IA para el manejo seguro de tu inmueble. Herramientas a la vanguardia para que tu proceso sea seguro y sin fricción.
                                 </p>
-                                <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 text-center">IA + Automatización</p>
+                                <div className="p-2 sm:p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-amber-500 text-center">IA + Automatización</p>
                                 </div>
                             </div>
                         </div>
@@ -269,11 +269,11 @@ const AboutMagno: React.FC = () => {
                 </div>
 
                 {/* Vision & Values: GOLD HIGHLIGHTS (Anti-Italic) */}
-                <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-start">
-                    <div className="space-y-12">
-                        <div className="space-y-6">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-32 items-start -mt-10 sm:mt-0">
+                    <div className="space-y-8 sm:space-y-12 text-center lg:text-left">
+                        <div className="space-y-4 sm:space-y-6">
                             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary">A Dónde Vamos</h2>
-                            <h3 className="text-4xl md:text-5xl font-black uppercase text-slate-900 dark:text-white leading-[0.9] tracking-tighter">
+                            <h3 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-slate-900 dark:text-white leading-[0.9] tracking-tighter">
                                 Estándar de servicio:<br />
                                 <span className="text-amber-500">Rápido, Claro y Estructurado</span>
                             </h3>
@@ -283,8 +283,8 @@ const AboutMagno: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-3xl p-12 rounded-[4rem] border border-slate-200 dark:border-white/10 space-y-10">
-                        <h2 className="text-sm font-black uppercase tracking-[0.5em] text-primary mb-8">Nuestros Valores</h2>
+                    <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-3xl p-6 sm:p-12 rounded-[2.5rem] sm:rounded-[4rem] border border-slate-200 dark:border-white/10 space-y-8 sm:space-y-10 text-center sm:text-left">
+                        <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.5em] text-primary mb-4 sm:mb-8">Nuestros Valores</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             {[
                                 { t: 'Magnificar', d: 'Brindar la mayor cantidad de valor posible.' },
