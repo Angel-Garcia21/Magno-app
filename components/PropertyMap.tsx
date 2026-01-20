@@ -70,10 +70,10 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
             {onScheduleClick && (
                 <button
                     onClick={onScheduleClick}
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-primary hover:bg-primary/90 text-white font-black px-8 py-4 rounded-[2rem] text-sm uppercase tracking-[0.2em] shadow-2xl flex items-center gap-3 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-4 duration-700 border-2 border-white/20 whitespace-nowrap"
+                    className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 bg-primary hover:bg-primary/90 text-white font-black px-4 py-2 sm:px-8 sm:py-4 rounded-[1rem] sm:rounded-[2rem] text-[9px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.2em] shadow-2xl flex items-center gap-2 sm:gap-3 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-4 duration-700 border sm:border-2 border-white/20 whitespace-nowrap max-w-[90%]"
                 >
-                    <span className="material-symbols-outlined text-xl">{property.type === 'sale' ? 'real_estate_agent' : 'home_work'}</span>
-                    {property.type === 'sale' ? 'Quiero comprar esta propiedad' : 'Quiero rentar esta propiedad'}
+                    <span className="material-symbols-outlined text-sm sm:text-xl">{property.type === 'sale' ? 'real_estate_agent' : 'home_work'}</span>
+                    {property.type === 'sale' ? 'Quiero comprar' : 'Quiero rentar'} <span className="hidden sm:inline">esta propiedad</span>
                 </button>
             )}
         </div>
