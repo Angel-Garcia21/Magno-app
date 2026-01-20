@@ -46,7 +46,7 @@ const BlogPostDetails: React.FC = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-[#020617] font-poppins pb-40">
             {/* Premium Header Section */}
-            <div className="max-w-7xl mx-auto px-6 sm:px-10 pt-12 md:pt-24 pb-16">
+            <div className="max-w-7xl mx-auto px-5 sm:px-10 pt-6 md:pt-24 pb-10 sm:pb-16">
                 <div className="flex flex-col lg:flex-row gap-12 sm:gap-16 lg:items-center">
                     {/* Left Side: Metadata and Title */}
                     <div className="flex-1 space-y-8 animate-in fade-in slide-in-from-left-8 duration-700">
@@ -58,11 +58,11 @@ const BlogPostDetails: React.FC = () => {
                             <span className="text-primary">{post.category || 'Noticia'}</span>
                         </nav>
 
-                        <h1 className="text-4xl md:text-6xl xl:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-slate-900 dark:text-white">
+                        <h1 className="text-2xl sm:text-4xl md:text-6xl xl:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-slate-900 dark:text-white">
                             {post.title}
                         </h1>
 
-                        <p className="text-base sm:text-lg md:text-xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-2xl">
+                        <p className="text-sm sm:text-lg md:text-xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-2xl">
                             {post.excerpt}
                         </p>
 
@@ -96,7 +96,7 @@ const BlogPostDetails: React.FC = () => {
             <hr className="max-w-7xl mx-auto border-slate-100 dark:border-white/5 lg:my-8" />
 
             {/* Content Blocks */}
-            <div className="max-w-4xl mx-auto px-10 mt-20 space-y-16">
+            <div className="max-w-4xl mx-auto px-5 sm:px-10 mt-10 sm:mt-20 space-y-8 sm:space-y-16">
                 {post.content.map((block: BlogBlock) => (
                     <div key={block.id} className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                         {renderBlock(block)}
@@ -109,13 +109,13 @@ const BlogPostDetails: React.FC = () => {
     function renderBlock(block: BlogBlock) {
         switch (block.type) {
             case 'h1':
-                return <h2 className="text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{block.content}</h2>;
+                return <h2 className="text-2xl sm:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{block.content}</h2>;
             case 'h2':
-                return <h3 className="text-3xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{block.content}</h3>;
+                return <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">{block.content}</h3>;
             case 'h3':
-                return <h4 className="text-xl font-black uppercase tracking-widest text-primary leading-tight">{block.content}</h4>;
+                return <h4 className="text-lg sm:text-xl font-black uppercase tracking-widest text-primary leading-tight">{block.content}</h4>;
             case 'text':
-                return <p className="text-xl leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{block.content}</p>;
+                return <p className="text-base sm:text-xl leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{block.content}</p>;
             case 'image':
                 return (
                     <div className="space-y-4">
@@ -153,7 +153,7 @@ const BlogPostDetails: React.FC = () => {
                 return (
                     <ul className={`space-y-4 ${block.content.type === 'number' ? 'list-decimal ml-6' : 'list-none'}`}>
                         {block.content.items.map((item: string, i: number) => (
-                            <li key={i} className="flex gap-4 text-xl text-slate-600 dark:text-slate-400">
+                            <li key={i} className="flex gap-4 text-base sm:text-xl text-slate-600 dark:text-slate-400">
                                 {block.content.type === 'bullet' && <span className="text-primary font-black">•</span>}
                                 <span className={block.content.type === 'number' ? 'font-bold text-primary mr-2' : ''}>
                                     {block.content.type === 'number' ? `${i + 1}.` : ''}
@@ -185,7 +185,7 @@ const BlogPostDetails: React.FC = () => {
                 return (
                     <div
                         onClick={() => navigate(`/blog`)}
-                        className="bg-slate-50 dark:bg-slate-900 p-10 rounded-[4rem] border border-slate-100 dark:border-white/5 shadow-soft hover:shadow-2xl transition-all cursor-pointer group flex items-center gap-10"
+                        className="bg-slate-50 dark:bg-slate-900 p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[4rem] border border-slate-100 dark:border-white/5 shadow-soft hover:shadow-2xl transition-all cursor-pointer group flex items-center gap-6 sm:gap-10"
                     >
                         <div className="w-32 h-32 rounded-3xl overflow-hidden shadow-xl shrink-0 aspect-square">
                             <img
@@ -205,10 +205,9 @@ const BlogPostDetails: React.FC = () => {
             case 'external_link':
                 return (
                     <a
-                        href={block.content.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block bg-slate-50 dark:bg-slate-900/50 p-10 rounded-[4rem] border border-slate-100 dark:border-white/5 shadow-soft hover:shadow-2xl transition-all cursor-pointer group flex items-center gap-10 hover:-translate-y-2"
+                        className="block bg-slate-50 dark:bg-slate-900/50 p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[4rem] border border-slate-100 dark:border-white/5 shadow-soft hover:shadow-2xl transition-all cursor-pointer group flex items-center gap-6 sm:gap-10 hover:-translate-y-2"
                     >
                         <div className="w-24 h-24 rounded-3xl bg-white dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-xl shrink-0">
                             <span className="material-symbols-outlined text-4xl">open_in_new</span>
