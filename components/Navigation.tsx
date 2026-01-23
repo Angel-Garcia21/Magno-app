@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 
 interface NavigationProps {
   user: User | null;
-  onLogout: () => void;
+  onLogout: () => Promise<void>;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
@@ -21,10 +21,16 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
     setShowLogoutConfirm(true);
   };
 
-  const confirmLogout = () => {
-    onLogout();
-    setShowLogoutConfirm(false);
-    navigate('/');
+  const confirmLogout = async () => {
+    try {
+      await onLogout();
+    } catch (err) {
+      console.error("Logout confirm error:", err);
+    } finally {
+      setShowLogoutConfirm(false);
+      // Use window.location for a hard reset to the login page
+      window.location.href = '/login';
+    }
   };
 
   // Theme Toggle Button

@@ -134,7 +134,7 @@ const PropertyPreview: React.FC<PropertyPreviewProps> = ({ formData, mode, onEdi
                                     allowFullScreen
                                     referrerPolicy="no-referrer-when-downgrade"
                                     src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.address)}`}
-                                    className="grayscale group-hover:grayscale-0 transition-all duration-700"
+                                    className="w-full h-full"
                                 ></iframe>
                             </div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><span className="material-symbols-outlined text-sm">location_on</span>{formData.address}</p>

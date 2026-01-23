@@ -235,31 +235,31 @@ const BlogHighlights: React.FC<{ navigate: any }> = ({ navigate }) => {
         <div
           key={post.id}
           onClick={() => navigate(`/blog/${post.slug}`)}
-          className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-900 rounded-[3rem] overflow-hidden shadow-soft hover:shadow-2xl transition-all duration-500 border border-slate-50 dark:border-white/5"
+          className="group cursor-pointer flex flex-col h-full bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-soft hover:shadow-2xl transition-all duration-500 border border-slate-50 dark:border-white/5"
         >
-          <div className="relative aspect-[16/10] overflow-hidden">
+          <div className="relative aspect-[16/9] sm:aspect-[16/10] overflow-hidden">
             <img src={post.main_image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full">
-              <p className="text-[8px] font-black text-primary uppercase tracking-widest">{post.category || 'Noticias'}</p>
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 sm:px-4 sm:py-1.5 rounded-full">
+              <p className="text-[7px] sm:text-[8px] font-black text-primary uppercase tracking-widest">{post.category || 'Noticias'}</p>
             </div>
           </div>
-          <div className="p-10 flex flex-col flex-1">
-            <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 line-clamp-2 leading-tight group-hover:text-primary transition-colors">{post.title}</h3>
-            <p className="text-sm text-slate-400 line-clamp-3 mb-8 leading-relaxed">{post.excerpt}</p>
-            <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</span>
-                <span className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-l border-slate-100 dark:border-white/10 pl-4">
-                  <span className="material-symbols-outlined text-xs">menu_book</span>
+          <div className="p-6 sm:p-10 flex flex-col flex-1">
+            <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tighter mb-2 sm:mb-4 line-clamp-2 leading-tight group-hover:text-primary transition-colors">{post.title}</h3>
+            <p className="text-xs sm:text-sm text-slate-400 line-clamp-3 mb-4 sm:mb-8 leading-relaxed">{post.excerpt}</p>
+            <div className="mt-auto pt-4 sm:pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <span className="text-[8px] sm:text-[9px] font-black text-slate-300 uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-l border-slate-100 dark:border-white/10 pl-2 sm:pl-4">
+                  <span className="material-symbols-outlined text-[10px] sm:text-xs">menu_book</span>
                   5 MIN
                 </span>
-                <div className="flex items-center gap-0.5 ml-1">
+                <div className="flex items-center gap-0.5 ml-1 hidden sm:flex">
                   {[1, 2, 3, 4, 5].map(s => (
                     <span key={s} className="material-symbols-outlined text-[10px] text-amber-500 fill-1">star</span>
                   ))}
                 </div>
               </div>
-              <span className="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+              <span className="material-symbols-outlined text-sm sm:text-base text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
             </div>
           </div>
         </div>

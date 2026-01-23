@@ -741,7 +741,7 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                             />
                             {formData.contact_home_address && (
                                 <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 dark:border-white/5 mt-4">
-                                    <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.contact_home_address)}`} className="grayscale hover:grayscale-0 transition-all duration-700"></iframe>
+                                    <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.contact_home_address)}`} className="w-full h-full"></iframe>
                                 </div>
                             )}
                             <div className="space-y-3">
@@ -765,7 +765,7 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                             />
                             {formData.address && (
                                 <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 dark:border-white/5 mt-4">
-                                    <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.address)}`} className="grayscale hover:grayscale-0 transition-all duration-700"></iframe>
+                                    <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.address)}`} className="w-full h-full"></iframe>
                                 </div>
                             )}
 
@@ -1270,7 +1270,7 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                                         { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768519978/1_qn2civ.png", cls: "h-32 scale-125" }, // Viva Anuncios
                                         { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768520006/8_wjmrel.png", cls: "h-32 scale-125" }, // Propiedades.com
                                         { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768519496/fb_logo_sin_fondo_lf3vjn.png", cls: "h-32 scale-125" }, // Facebook
-                                        { src: "/assets/magno-logo.png", cls: "h-20" }, // Magno Grupo Inmobiliario
+                                        { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png", cls: "h-20" }, // Magno Grupo Inmobiliario
                                         { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768519993/4_rm4aiw.png", cls: "h-32 scale-125" }, // Lamudi
                                         { src: "https://res.cloudinary.com/dmifhcisp/image/upload/v1768519989/3_zzb5ho.png", cls: "h-32 scale-125" }, // Portal Terreno
 

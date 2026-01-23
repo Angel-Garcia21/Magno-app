@@ -639,129 +639,58 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
       if (err) throw err;
 
-      // 2. If approved, create a REAL property record
+      // 2. If approved, update notification and document linking
       if (newStatus === 'approved') {
         const sub = recruitments.find(r => r.id === id);
         if (sub) {
-          setApprovalStep('Generando publicación en el portal...');
           const fd = sub.form_data;
-          const uniqueRef = fd.ref || fd.folio || `${sub.type === 'rent' ? 'R' : 'V'}${Math.floor(10000 + Math.random() * 90000)}`;
 
-          const { data: propData, error: propErr } = await supabase
-            .from('properties')
-            .insert([{
-              title: fd.title,
-              address: fd.address,
-              price: fd.price,
-              description: fd.description,
-              specs: {
-                beds: fd.rooms,
-                baths: fd.bathrooms,
-                halfBaths: fd.half_bathrooms,
-                parking: fd.parking_spots,
-                area: fd.construction_area,
-                landArea: fd.land_area,
-                levels: fd.levels,
-                age: fd.age_years,
-                condition: fd.property_condition || fd.estado_inmueble || fd.condition
-              },
-              owner_id: sub.owner_id,
-              ref: uniqueRef,
-              main_image: fd.main_image_url || (fd.images && fd.images[0]) || '',
-              images: fd.gallery_urls || fd.images || [],
-              services: fd.included_services || fd.services || [],
-              features: fd.features || [],
-              amenities: fd.mobiliario || fd.amenities || [],
-              spaces: fd.spaces || [],
-              additionals: fd.additionals || [],
-              maintenance_fee: fd.maintenance_fee || 0,
-              type: sub.type || 'sale',
-              keys_provided: fd.keys_provided
-            }])
-            .select()
-            .single();
+          setApprovalStep('Enviando notificación al propietario...');
+          const { error: notifError } = await supabase.from('notifications').insert([{
+            user_id: sub.owner_id,
+            title: '¡Propiedad Aprobada!',
+            message: `Tu propiedad "${fd.title || 'Propiedad'}" ha sido aprobada. La estamos subiendo a los portales globales (Tokko, Inmuebles24, etc.). Te avisaremos en cuanto esté pública.`,
+            type: 'success'
+          }]);
 
-          if (propErr) throw propErr;
+          if (notifError) console.error("Notification Error:", notifError);
 
-          if (propData) {
-            setApprovalStep('Enviando notificación al propietario...');
-            const { error: notifError } = await supabase.from('notifications').insert([{
+          // 3. REGISTER DOCUMENTS LINKED TO SUBMISSION (Since no Property exists yet)
+          try {
+            setApprovalStep('Vinculando documentos legales...');
+
+            // === DOCUMENT 1: RECRUITMENT SHEET ===
+            await supabase.from('signed_documents').insert([{
+              submission_id: id, // Link to submission instead of property
               user_id: sub.owner_id,
-              title: '¡Propiedad Aprobada!',
-              message: `Tu propiedad "${fd.title}" ha sido aprobada y publicada con folio ${uniqueRef}.`,
-              type: 'success'
+              document_type: 'recruitment',
+              pdf_url: fd.unsigned_recruitment_url || null,
+              status: sub.is_signed ? 'signed' : 'pending',
+              signed_at: sub.is_signed ? (fd.is_signed_at || new Date().toISOString()) : null
             }]);
 
-            if (notifError) console.error("Notification Error:", notifError);
-
-            // 3. GENERATE AND SAVE BOTH DOCUMENTS (RECRUITMENT SHEET + KEYS RECEIPT)
-            try {
-              setApprovalStep('Generando documentos legales...');
-              // Complete data object for PDF generation
-              const completeDocData = {
-                ...fd,
-                ...sub,
-                ref: propData.ref,
-                folio: propData.ref,
-                ownerName: sub.profiles?.full_name || fd.owner_name,
-                contact_email: sub.profiles?.email || fd.email,
-                phone: fd.phone || sub.profiles?.phone,
-                address: fd.address,
-                title: fd.title,
-                price: fd.price,
-                property_condition: fd.property_condition || fd.estado_inmueble,
-                age_status: fd.age_status,
-                age_years: fd.age_years,
-                mobiliario: fd.mobiliario || [],
-                maintenance_fee: fd.maintenance_fee,
-                rooms: fd.rooms,
-                bathrooms: fd.bathrooms,
-                half_bathrooms: fd.half_bathrooms,
-                parking_spots: fd.parking_spots,
-                construction_area: fd.construction_area,
-                land_area: fd.land_area,
-                levels: fd.levels,
-                features: fd.features || [],
-                included_services: fd.included_services || [],
-                keys_provided: fd.keys_provided
-              };
-
-              // === DOCUMENT 1: RECRUITMENT SHEET ===
-              setApprovalStep('Registrando Hoja de Reclutamiento...');
-              const { error: recruitmentInsertError } = await supabase.from('signed_documents').insert([{
-                property_id: propData.id,
+            // === DOCUMENT 2: KEYS RECEIPT ===
+            if (fd.keys_provided) {
+              await supabase.from('signed_documents').insert([{
+                submission_id: id,
                 user_id: sub.owner_id,
-                document_type: 'recruitment',
-                pdf_url: fd.unsigned_recruitment_url || null,
+                document_type: 'keys',
+                pdf_url: fd.unsigned_keys_url || null,
                 status: sub.is_signed ? 'signed' : 'pending',
                 signed_at: sub.is_signed ? (fd.is_signed_at || new Date().toISOString()) : null
               }]);
-
-              if (recruitmentInsertError) console.error("Error inserting recruitment doc:", recruitmentInsertError);
-
-              // === DOCUMENT 2: KEYS RECEIPT ===
-              if (fd.keys_provided) {
-                setApprovalStep('Registrando Responsiva de Llaves...');
-                await supabase.from('signed_documents').insert([{
-                  property_id: propData.id,
-                  user_id: sub.owner_id,
-                  document_type: 'keys',
-                  pdf_url: fd.unsigned_keys_url || null,
-                  status: sub.is_signed ? 'signed' : 'pending',
-                  signed_at: sub.is_signed ? (fd.is_signed_at || new Date().toISOString()) : null
-                }]);
-              }
-
-              setApprovalStep('Finalizando...');
-              fetchAllSignedDocuments();
-              success('Propiedad aprobada y publicada exitosamente. Documentación vinculada.');
-            } catch (docGenError: any) {
-              console.error("Error linking documents:", docGenError);
-              error(`Error al vincular documentos: ${docGenError.message}`);
             }
+
+            setApprovalStep('Finalizando...');
+            fetchAllSignedDocuments();
+            success('Solicitud aprobada correctamente. Ahora puedes subirla a Tokko y vincularla.');
+          } catch (docGenError: any) {
+            console.error("Error linking documents:", docGenError);
+            error(`Error al vincular documentos: ${docGenError.message}`);
           }
         }
-      } else if (newStatus !== 'approved') {
+      }
+      else if (newStatus !== 'approved') {
         success('Estado de reclutamiento actualizado');
       }
 
@@ -1313,7 +1242,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
       const prop = properties.find(p => p.id === id);
       if (prop) openEditModal(prop);
     } else if (type === 'delete_user') {
-      await executeDeleteUser(id, metadata?.name || 'Usuario');
+      await executeDeleteUser(id, metadata?.name || 'Usuario', confirmAction.selectedOption === 'purge');
     } else if (type === 'delete_proof') {
       await executeDeleteProof(id);
     } else if (type === 'delete_report') {
@@ -1359,22 +1288,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
       id,
       metadata: { name },
       title: 'ELIMINAR USUARIO',
-      message: `¿Estás seguro de que deseas eliminar permanentemente al usuario "${name}"? Esta acción no se puede deshacer.`
+      message: `¿Cómo deseas proceder con la eliminación de "${name}"?`,
+      showUserOptions: true,
+      selectedOption: 'unlink'
     });
   };
 
-  const executeDeleteUser = async (id: string, name: string) => {
+  const executeDeleteUser = async (id: string, name: string, purgeAssets: boolean) => {
     try {
-      const { error: rpcError } = await supabase.rpc('delete_user_by_admin', { target_user_id: id });
+      const { error: rpcError } = await supabase.rpc('delete_user_by_admin_v2', {
+        target_user_id: id,
+        purge_assets: purgeAssets
+      });
 
       if (rpcError) {
-        console.warn("RPC Deletion failed, falling back to profile-only delete:", rpcError);
-        const { error: profileError } = await supabase.from('profiles').delete().eq('id', id);
-        if (profileError) throw profileError;
+        console.warn("RPC v2 failed, attempting v1 fallback:", rpcError);
+        const { error: fallbackError } = await supabase.rpc('delete_user_by_admin', { target_user_id: id });
+        if (fallbackError) throw fallbackError;
       }
 
       onUsersUpdate(users.filter(u => u.id !== id));
-      success(`Usuario "${name}" eliminado correctamente.`);
+      success(`Usuario "${name}" eliminado correctamente (${purgeAssets ? 'Limpieza total' : 'Desvinculado'}).`);
     } catch (err: any) {
       error(`Error al eliminar usuario: ${err.message}`);
     }
@@ -2032,19 +1966,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
         {/* Mobile Burger Toggle */}
         <button
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="md:hidden fixed top-6 left-6 z-[100] w-14 h-14 bg-[#020617] border border-white/10 rounded-2xl flex items-center justify-center text-white shadow-2xl active:scale-90 transition-all"
+          className="md:hidden fixed top-6 left-6 z-[100] w-12 h-12 bg-[#020617] border border-white/10 rounded-2xl flex items-center justify-center text-white shadow-2xl active:scale-90 transition-all"
         >
-          <span className="material-symbols-outlined">{isSidebarCollapsed ? 'menu' : 'close'}</span>
+          <span className="material-symbols-outlined text-xl">{isSidebarCollapsed ? 'menu' : 'close'}</span>
         </button>
 
-        {/* Sidebar: Premium Luxury Style */}
-        <aside className={`bg-[#020617] text-white p-6 fixed inset-y-0 left-0 md:sticky md:top-0 md:h-screen flex flex-col z-[95] transition-all duration-500 ease-in-out shadow-2xl ${!isSidebarCollapsed
-          ? 'translate-x-0 w-64 sm:w-80'
-          : '-translate-x-full md:translate-x-0 md:w-24 px-4'
+        <aside className={`bg-[#020617] text-white p-4 fixed inset-y-0 left-0 md:sticky md:top-0 md:h-screen flex flex-col z-[95] transition-all duration-300 ease-in-out shadow-2xl ${!isSidebarCollapsed
+          ? 'translate-x-0 w-24 md:w-80'
+          : '-translate-x-full md:translate-x-0 md:w-24'
           }`}>
 
 
-          <div className={`flex items-center gap-4 mb-16 ${!isSidebarCollapsed ? 'px-4' : 'justify-center px-0'}`}>
+          <div className={`flex items-center gap-4 mb-16 ${!isSidebarCollapsed ? 'md:px-4 justify-center md:justify-start px-0' : 'justify-center px-0'}`}>
             <button
               onClick={() => navigate('/')}
               className="w-14 h-14 bg-white/10 backdrop-blur-xl border border-primary/30 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/20 p-2 shrink-0 hover:scale-110 active:scale-95 transition-all"
@@ -2052,7 +1985,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
               <img src="https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png" alt="Magno Logo" className="h-12 w-auto object-contain" />
             </button>
             {!isSidebarCollapsed && (
-              <div className="animate-in fade-in slide-in-from-left-4 duration-500">
+              <div className="hidden md:block animate-in fade-in slide-in-from-left-4 duration-500">
                 <h1 className="font-black text-xl uppercase tracking-[-0.05em] leading-tight">Magno <span className="text-primary">Admin</span></h1>
                 <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1">Control Center</p>
               </div>
@@ -2106,9 +2039,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
         </aside>
 
-        <main className="flex-1 p-6 md:p-12 lg:p-20 overflow-x-hidden pt-32 md:pt-12 lg:pt-20">
+        <main className="flex-1 p-4 md:p-12 lg:p-20 overflow-x-hidden pt-28 md:pt-12 lg:pt-20">
           {/* Header Action Bar */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 md:mb-20">
             <div>
               <h2 className="text-4xl md:text-6xl font-extrabold uppercase tracking-tighter text-slate-900 dark:text-white mb-4 font-display">
                 {activeTab === 'inventory' ? 'Inventario' :
@@ -2239,7 +2172,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
           {activeTab === 'inventory' && currentUser?.role === 'admin' && (
             <div className="flex flex-col gap-8 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-inner">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-inner overflow-x-auto no-scrollbar max-w-full">
                   {['active', 'reserved', 'paused', 'rented', 'all'].map((st) => (
                     <button
                       key={st}
@@ -2285,8 +2218,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
                 return matchesStatus && matchesSearch;
               }).map(p => (
-                <div key={p.id} className="relative bg-white dark:bg-slate-900 p-6 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-[0_15px_45px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-center gap-8 group hover:shadow-[0_25px_60px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-hidden">
-                  <div className="relative w-40 h-40 rounded-[2.2rem] overflow-hidden flex-shrink-0">
+                <div key={p.id} className="relative bg-white dark:bg-slate-900 p-5 md:p-8 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-[0_15px_45px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 group hover:shadow-[0_25px_60px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-hidden">
+                  <div className="relative w-full md:w-40 aspect-video md:aspect-square rounded-[1.8rem] md:rounded-[2.2rem] overflow-hidden flex-shrink-0">
                     <img src={p.mainImage || (p.images && p.images[0]) || 'https://res.cloudinary.com/dmifhcisp/image/upload/v1768068105/logo_magno_jn5kql.png'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-md rounded-full">
@@ -2307,69 +2240,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                     </div>
                   </div>
 
-                  <div className="flex-1 min-w-0 flex items-center justify-between gap-8">
+                  <div className="flex-1 w-full flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white leading-tight mb-2 truncate">{p.title}</h3>
-                      <div className="flex items-center gap-2 text-slate-400 mb-6">
+                      <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white leading-tight mb-2 line-clamp-2 md:truncate">{p.title}</h3>
+                      <div className="flex items-center gap-2 text-slate-400 mb-4 md:mb-6">
                         <span className="material-symbols-outlined text-base">location_on</span>
-                        <p className="text-[10px] font-bold uppercase tracking-widest truncate">{p.address}</p>
+                        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest line-clamp-1">{p.address}</p>
                       </div>
 
-                      <div>
-                        <p className="text-2xl font-black text-primary tracking-tighter">${p.price?.toLocaleString()}</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-xl md:text-2xl font-black text-primary tracking-tighter">${p.price?.toLocaleString()}</p>
                         <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-300">Valor Mercado</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 sm:gap-6">
-                      <div className="hidden sm:block w-px h-20 bg-slate-100 dark:bg-slate-800" />
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <div className="hidden md:block w-px h-20 bg-slate-100 dark:bg-slate-800" />
 
-                      <div className="grid grid-cols-2 gap-2 sm:gap-3 min-w-[100px] sm:min-w-[120px]">
-                        {p.status === PropertyStatus.AVAILABLE ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              updatePropertyStatus(p.id, PropertyStatus.PAUSED);
-                            }}
-                            className="w-11 h-11 bg-amber-50 dark:bg-amber-900/10 text-amber-500 rounded-2xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all shadow-sm"
-                            title="Pausar Propiedad"
-                          >
-                            <span className="material-symbols-outlined text-lg">pause_circle</span>
-                          </button>
-                        ) : (p.status === PropertyStatus.PAUSED || p.status === PropertyStatus.RESERVED) ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              updatePropertyStatus(p.id, PropertyStatus.AVAILABLE);
-                            }}
-                            className="w-11 h-11 bg-green-50 dark:bg-green-900/10 text-green-500 rounded-2xl flex items-center justify-center hover:bg-green-500 hover:text-white transition-all shadow-sm"
-                            title="Reactivar Propiedad"
-                          >
-                            <span className="material-symbols-outlined text-lg">play_circle</span>
-                          </button>
-                        ) : <div className="w-11 h-11" />}
-
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updatePropertyStatus(p.id, PropertyStatus.RENTED);
-                          }}
-                          className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-sm ${p.status === PropertyStatus.RENTED
-                            ? 'bg-indigo-500 text-white cursor-default'
-                            : 'bg-indigo-50 dark:bg-indigo-900/10 text-indigo-500 hover:bg-indigo-500 hover:text-white'
-                            }`}
-                          title="Marcar como Rentada"
-                          disabled={p.status === PropertyStatus.RENTED}
-                        >
-                          <span className="material-symbols-outlined text-lg">key</span>
-                        </button>
+                      <div className="flex flex-wrap md:grid md:grid-cols-2 gap-3 min-w-0 md:min-w-[120px]">
+                        {/* Status buttons removed as they are now managed from Tokko */}
 
                         <button
                           type="button"
@@ -2436,7 +2325,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
               </div>
 
               {internalProperties.map(p => (
-                <div key={p.id} className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 hover:shadow-2xl transition-all relative overflow-hidden group">
+                <div key={p.id} className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-800 hover:shadow-2xl transition-all relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-100 transition-opacity">
                     <span className="material-symbols-outlined text-4xl">domain</span>
                   </div>
@@ -2483,7 +2372,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
           {activeTab === 'client-panels' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {users.length > 0 ? users.map(u => (
-                <div key={u.id} className="relative bg-white dark:bg-slate-900 p-10 rounded-[4rem] border border-slate-100 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.1)] transition-all duration-500 text-center flex flex-col items-center">
+                <div key={u.id} className="relative bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 dark:border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.1)] transition-all duration-500 text-center flex flex-col items-center">
                   <div className={`w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-white mb-6 shadow-2xl ${u.role === 'owner' ? 'bg-amber-500 shadow-amber-200' : 'bg-green-600 shadow-green-200'}`}>
                     <span className="material-symbols-outlined text-3xl font-light">{u.role === 'owner' ? 'castle' : 'person'}</span>
                   </div>
@@ -4721,21 +4610,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                       {confirmAction.message}
                     </p>
 
-                    {confirmAction.showReasons && (
+                    {confirmAction.showUserOptions && (
                       <div className="mb-8 space-y-3 text-left">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Motivo del bloqueo</p>
-                        {['Inquilino en investigación', 'El cliente ya no quiere seguir el proceso', 'Otras razones'].map((r) => (
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-2">Opciones de Eliminación</p>
+                        {[
+                          { id: 'unlink', label: 'Solo eliminar usuario', desc: 'Mantiene las propiedades pero desvincula a la persona.' },
+                          { id: 'purge', label: 'Eliminar usuario y propiedades', desc: 'Borra al usuario y todas sus propiedades/documentos.' }
+                        ].map((opt) => (
                           <button
-                            key={r}
-                            onClick={() => setConfirmAction({ ...confirmAction, selectedReason: r })}
-                            className={`w-full p-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider text-left transition-all border-2 ${confirmAction.selectedReason === r
-                              ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/5'
-                              : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-white/5 text-slate-500 hover:border-slate-200'
+                            key={opt.id}
+                            onClick={() => setConfirmAction({ ...confirmAction, selectedOption: opt.id })}
+                            className={`w-full p-5 rounded-[2rem] text-left transition-all border-2 ${confirmAction.selectedOption === opt.id
+                              ? 'bg-primary/5 border-primary shadow-lg shadow-primary/5'
+                              : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-white/5 hover:border-slate-200'
                               }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span>{r}</span>
-                              {confirmAction.selectedReason === r && <span className="material-symbols-outlined text-sm">check_circle</span>}
+                            <div className="flex items-start gap-4">
+                              <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${confirmAction.selectedOption === opt.id ? 'border-primary bg-primary' : 'border-slate-300'}`}>
+                                {confirmAction.selectedOption === opt.id && <div className="w-2 h-2 rounded-full bg-white animate-in zoom-in duration-300" />}
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-[11px] font-black uppercase tracking-tight ${confirmAction.selectedOption === opt.id ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>
+                                  {opt.label}
+                                </p>
+                                <p className="text-[9px] font-medium text-slate-400 leading-tight mt-1 lowercase first-letter:uppercase">
+                                  {opt.desc}
+                                </p>
+                              </div>
                             </div>
                           </button>
                         ))}

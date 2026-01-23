@@ -338,7 +338,7 @@ const AboutMagno: React.FC = () => {
                     </button>
 
                     <div className="pt-8 flex flex-col items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.5em]">Magno Inmobiliaria © 2024</span>
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.5em]">Magno Inmobiliaria © 2026</span>
                     </div>
                 </div>
 

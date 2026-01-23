@@ -61,12 +61,12 @@
         transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    /* Global Zoom - Only for Desktop to maintain the 85% aesthetic without breaking mobile viewport */
+    /* Global Zoom - Removed to fix layout truncation bugs */
     @media (min-width: 1024px) {
         body {
-            zoom: 0.85;
-            -moz-transform: scale(0.85);
-            -moz-transform-origin: top center;
+            /* zoom: 0.85; */
+            /* -moz-transform: scale(0.85); */
+            /* -moz-transform-origin: top center; */
         }
     }
 }

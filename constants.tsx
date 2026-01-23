@@ -52,14 +52,14 @@ export const INITIAL_PROPERTY: Property = {
 export const ALL_PROPERTIES: Property[] = [INITIAL_PROPERTY];
 
 export const INITIAL_TIMELINE: TimelineEvent[] = [
-  { id: 't1', title: 'Propiedad Publicada', description: 'El inmueble ya es visible para prospectos.', date: '2024-01-01', status: 'completed' }
+  { id: 't1', title: 'Propiedad Publicada', description: 'El inmueble ya es visible para prospectos.', date: '2026-01-01', status: 'completed' }
 ];
 
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 'b1',
-    title: 'Tendencias del Mercado Inmobiliario 2024',
-    slug: 'tendencias-mercado-2024',
+    title: 'Tendencias del Mercado Inmobiliario 2026',
+    slug: 'tendencias-mercado-2026',
     category: 'Análisis',
     excerpt: '¿Por qué Zapopan sigue siendo la mejor zona para invertir?',
     main_image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800',

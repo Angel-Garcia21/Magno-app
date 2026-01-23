@@ -423,7 +423,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                 <input type="text" name="contact_home_address" value={formData.contact_home_address} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-none font-bold text-sm" />
                                 {formData.contact_home_address && (
                                     <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 dark:border-white/5 mt-4">
-                                        <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.contact_home_address)}`} className="grayscale hover:grayscale-0 transition-all duration-700"></iframe>
+                                        <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.contact_home_address)}`} className="w-full h-full"></iframe>
                                     </div>
                                 )}
                             </div>
@@ -444,7 +444,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                 <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-none font-bold text-sm" />
                                 {formData.address && (
                                     <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 dark:border-white/5 mt-4">
-                                        <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.address)}`} className="grayscale hover:grayscale-0 transition-all duration-700"></iframe>
+                                        <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(formData.address)}`} className="w-full h-full"></iframe>
                                     </div>
                                 )}
                             </div>

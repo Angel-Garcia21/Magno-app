@@ -795,7 +795,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, property }) => {
               </div>
             </button>
           </div>
-          <p className="text-[8px] text-slate-400 dark:text-slate-600 font-black uppercase tracking-[0.4em]">Grupo Magno Inmobiliario © 2025</p>
+          <p className="text-[8px] text-slate-400 dark:text-slate-600 font-black uppercase tracking-[0.4em]">Grupo Magno Inmobiliario © 2026</p>
         </div>
 
 
