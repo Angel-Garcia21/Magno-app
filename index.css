@@ -51,6 +51,11 @@
         --text-current: var(--color-text-dark);
     }
 
+    html {
+        background-color: var(--bg-current);
+        min-height: 100vh;
+    }
+
     body {
         background-color: var(--bg-current);
         color: var(--text-current);
@@ -59,14 +64,13 @@
         @apply antialiased;
         scroll-behavior: smooth;
         transition: background-color 0.3s ease, color 0.3s ease;
+        min-height: 100vh;
     }
 
-    /* Global Zoom - Removed to fix layout truncation bugs */
+    /* Global Zoom at 80% for Desktop */
     @media (min-width: 1024px) {
         body {
-            /* zoom: 0.85; */
-            /* -moz-transform: scale(0.85); */
-            /* -moz-transform-origin: top center; */
+            zoom: 0.8;
         }
     }
 }
