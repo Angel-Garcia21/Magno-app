@@ -54,6 +54,11 @@
     html {
         background-color: var(--bg-current);
         min-height: 100vh;
+
+        /* Move zoom here to ensure fixed elements anchor to viewport correctly */
+        @media (min-width: 1024px) {
+            zoom: 80%;
+        }
     }
 
     body {
@@ -65,13 +70,6 @@
         scroll-behavior: smooth;
         transition: background-color 0.3s ease, color 0.3s ease;
         min-height: 100vh;
-    }
-
-    /* Global Zoom at 80% for Desktop */
-    @media (min-width: 1024px) {
-        body {
-            zoom: 0.8;
-        }
     }
 }
 
