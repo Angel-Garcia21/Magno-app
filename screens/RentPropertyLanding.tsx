@@ -3,19 +3,22 @@ import { useNavigate } from 'react-router-dom';
 
 const RentPropertyLanding: React.FC = () => {
     const navigate = useNavigate();
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const containerRef = React.useRef<HTMLDivElement>(null);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    // Mouse & Touch tracking for dynamic background
+    // Mouse & Touch tracking via CSS variables to avoid React re-renders
     useEffect(() => {
-        const handleMove = (x: number, y: number) => {
-            setMousePos({ x, y });
+        const updatePos = (x: number, y: number) => {
+            if (containerRef.current) {
+                containerRef.current.style.setProperty('--mouse-x', `${x}px`);
+                containerRef.current.style.setProperty('--mouse-y', `${y}px`);
+            }
         };
 
-        const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+        const handleMouseMove = (e: MouseEvent) => updatePos(e.clientX, e.clientY);
         const handleTouch = (e: TouchEvent) => {
             if (e.touches.length > 0) {
-                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                updatePos(e.touches[0].clientX, e.touches[0].clientY);
             }
         };
 
@@ -168,7 +171,14 @@ const RentPropertyLanding: React.FC = () => {
     useScrollReveal();
 
     return (
-        <div className="min-h-screen bg-[#0B1120] text-white overflow-hidden relative">
+        <div
+            ref={containerRef}
+            className="min-h-screen bg-[#0B1120] text-white overflow-hidden relative"
+            style={{
+                '--mouse-x': '50%',
+                '--mouse-y': '50%'
+            } as React.CSSProperties}
+        >
             <LogoHeader />
             {/* Ultra-Dynamic Mouse-Following Background with Enhanced Neon */}
             {/* Interactive Grid Background */}
@@ -188,8 +198,8 @@ const RentPropertyLanding: React.FC = () => {
                     style={{
                         backgroundImage: `linear-gradient(#fbbf24 1px, transparent 1px), linear-gradient(90deg, #fbbf24 1px, transparent 1px)`,
                         backgroundSize: '50px 50px',
-                        maskImage: `radial-gradient(circle 300px at ${mousePos.x}px ${mousePos.y}px, black, transparent)`,
-                        WebkitMaskImage: `radial-gradient(circle 300px at ${mousePos.x}px ${mousePos.y}px, black, transparent)`,
+                        maskImage: `radial-gradient(circle 300px at var(--mouse-x) var(--mouse-y), black, transparent)`,
+                        WebkitMaskImage: `radial-gradient(circle 300px at var(--mouse-x) var(--mouse-y), black, transparent)`,
                     }}
                 />
 
@@ -197,7 +207,7 @@ const RentPropertyLanding: React.FC = () => {
                 <div
                     className="absolute inset-0 transition-opacity duration-700"
                     style={{
-                        background: `radial-gradient(circle 600px at ${mousePos.x}px ${mousePos.y}px, rgba(251, 191, 36, 0.15), transparent 70%)`
+                        background: `radial-gradient(circle 600px at var(--mouse-x) var(--mouse-y), rgba(251, 191, 36, 0.15), transparent 70%)`
                     }}
                 />
             </div>
@@ -268,7 +278,7 @@ const RentPropertyLanding: React.FC = () => {
                             <div
                                 key={idx}
                                 onClick={() => setActiveBenefit(benefit)}
-                                className="group relative bg-gradient-to-br from-slate-900/90 to-slate-800/80 backdrop-blur-xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 border border-amber-500/30 hover:border-amber-500/80 transition-all duration-500 md:hover:scale-105 md:hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] reveal-on-scroll cursor-pointer"
+                                className="group relative bg-gradient-to-br from-slate-900/90 to-slate-800/80 backdrop-blur-xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 border border-amber-500/30 hover:border-amber-500/80 transition-all duration-500 md:hover:scale-105 md:hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] active:scale-95 active:brightness-110 reveal-on-scroll cursor-pointer"
                                 style={{
                                     transitionDelay: `${idx * 100}ms`
                                 }}
