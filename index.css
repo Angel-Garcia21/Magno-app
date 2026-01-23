@@ -53,13 +53,12 @@
 
     html {
         background-color: var(--bg-current);
-        min-height: 100vh;
+        min-height: 100%;
+        height: 100%;
 
-        /* Move zoom here to ensure fixed elements anchor to viewport correctly */
+        /* Global UI Zoom for Desktop */
         @media (min-width: 1024px) {
             zoom: 80%;
-            min-height: 125vh;
-            /* fill the scaled viewport */
         }
     }
 
@@ -71,11 +70,7 @@
         @apply antialiased;
         scroll-behavior: smooth;
         transition: background-color 0.3s ease, color 0.3s ease;
-        min-height: 100vh;
-
-        @media (min-width: 1024px) {
-            min-height: 125vh;
-        }
+        min-height: 100%;
     }
 }
 

@@ -1971,7 +1971,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
           <span className="material-symbols-outlined text-xl">{isSidebarCollapsed ? 'menu' : 'close'}</span>
         </button>
 
-        <aside className={`bg-[#020617] text-white p-4 fixed inset-y-0 left-0 md:sticky md:top-0 md:h-screen flex flex-col z-[95] transition-all duration-300 ease-in-out shadow-2xl ${!isSidebarCollapsed
+        <aside className={`bg-[#020617] text-white p-4 fixed inset-y-0 left-0 flex flex-col z-[95] transition-all duration-300 ease-in-out shadow-2xl ${!isSidebarCollapsed
           ? 'translate-x-0 w-24 md:w-80'
           : '-translate-x-full md:translate-x-0 md:w-24'
           }`}>
@@ -1992,7 +1992,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
             )}
           </div>
 
-          <nav className="space-y-3 flex-1 overflow-y-auto no-scrollbar">
+          <nav className="space-y-3 flex-1 overflow-y-auto">
             {[
               { id: 'inventory', icon: 'real_estate_agent', label: 'Patrimonio', roles: ['admin'] },
               { id: 'internal-props', icon: 'domain', label: 'Propiedades', roles: ['admin'] },
@@ -2039,7 +2039,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
         </aside>
 
-        <main className="flex-1 p-4 md:p-12 lg:p-20 overflow-x-hidden pt-28 md:pt-12 lg:pt-20">
+        <main className={`flex-1 p-4 md:p-12 lg:p-20 overflow-x-hidden pt-28 md:pt-12 lg:pt-20 transition-all duration-300 ${!isSidebarCollapsed ? 'md:ml-80' : 'md:ml-24'}`}>
           {/* Header Action Bar */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 md:mb-20">
             <div>
