@@ -58,6 +58,8 @@
         /* Move zoom here to ensure fixed elements anchor to viewport correctly */
         @media (min-width: 1024px) {
             zoom: 80%;
+            min-height: 125vh;
+            /* fill the scaled viewport */
         }
     }
 
@@ -70,6 +72,10 @@
         scroll-behavior: smooth;
         transition: background-color 0.3s ease, color 0.3s ease;
         min-height: 100vh;
+
+        @media (min-width: 1024px) {
+            min-height: 125vh;
+        }
     }
 }
 
