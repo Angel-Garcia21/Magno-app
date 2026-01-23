@@ -6,13 +6,28 @@ const RentPropertyLanding: React.FC = () => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    // Mouse tracking for dynamic background
+    // Mouse & Touch tracking for dynamic background
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            setMousePos({ x: e.clientX, y: e.clientY });
+        const handleMove = (x: number, y: number) => {
+            setMousePos({ x, y });
         };
+
+        const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+        const handleTouch = (e: TouchEvent) => {
+            if (e.touches.length > 0) {
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        };
+
         window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        window.addEventListener('touchstart', handleTouch, { passive: true });
+        window.addEventListener('touchmove', handleTouch, { passive: true });
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('touchstart', handleTouch);
+            window.removeEventListener('touchmove', handleTouch);
+        };
     }, []);
 
     // Scroll tracking
@@ -253,17 +268,17 @@ const RentPropertyLanding: React.FC = () => {
                             <div
                                 key={idx}
                                 onClick={() => setActiveBenefit(benefit)}
-                                className="group relative bg-gradient-to-br from-slate-900/90 to-slate-800/80 backdrop-blur-xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 border border-amber-500/30 hover:border-amber-500/80 transition-all duration-500 hover:scale-105 hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] reveal-on-scroll cursor-pointer"
+                                className="group relative bg-gradient-to-br from-slate-900/90 to-slate-800/80 backdrop-blur-xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 border border-amber-500/30 hover:border-amber-500/80 transition-all duration-500 md:hover:scale-105 md:hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] reveal-on-scroll cursor-pointer"
                                 style={{
                                     transitionDelay: `${idx * 100}ms`
                                 }}
                             >
-                                <div className="w-12 h-12 md:w-16 md:h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 md:group-hover:scale-110 md:group-hover:rotate-6 transition-transform duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
                                     <span className="material-symbols-outlined text-amber-400 text-3xl">{benefit.icon}</span>
                                 </div>
                                 <h3 className="text-xl font-black uppercase text-white mb-2 group-hover:text-amber-400 transition-colors">{benefit.title}</h3>
                                 <p className="text-slate-400 leading-relaxed group-hover:text-slate-200 transition-colors">{benefit.desc}</p>
-                                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0">
+                                <div className="absolute bottom-6 right-6 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 md:group-hover:translate-x-0">
                                     <span className="material-symbols-outlined text-amber-400">arrow_forward</span>
                                 </div>
                             </div>
