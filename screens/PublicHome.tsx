@@ -137,7 +137,7 @@ const PublicHome: React.FC<PublicHomeProps> = ({ properties }) => {
           {availableProperties.map(prop => (
             <div
               key={prop.id}
-              onClick={() => navigate(`/property/${prop.id}`)}
+              onClick={() => navigate(`/propiedad/${prop.id}`)}
               className="min-w-[300px] sm:min-w-[380px] bg-white dark:bg-slate-900 rounded-[3.5rem] overflow-hidden shadow-soft hover:shadow-2xl transition-all duration-700 border border-slate-50 dark:border-white/5 group snap-center"
             >
               <div className="relative h-56 overflow-hidden">

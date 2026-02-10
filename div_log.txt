@@ -1,0 +1,543 @@
+4402: 13 ( +0 -0 ) | 
+4403: 13 ( +0 -0 ) | return (
+4404: 14 ( +1 -0 ) | <div className="min-h-screen bg-background-light d
+4405: 14 ( +0 -0 ) | {/* Mobile Burger Toggle */}
+4406: 14 ( +0 -0 ) | <button
+4407: 14 ( +0 -0 ) | onClick={() => setIsSidebarCollapsed(!isSidebarCol
+4408: 14 ( +0 -0 ) | className="md:hidden fixed top-6 left-6 z-[100] w-
+4409: 14 ( +0 -0 ) | >
+4410: 14 ( +0 -0 ) | <span className="material-symbols-outlined text-xl
+4411: 14 ( +0 -0 ) | </button>
+4412: 14 ( +0 -0 ) | 
+4413: 14 ( +0 -0 ) | {/* Sidebar Overlay (Mobile Only) */}
+4414: 14 ( +0 -0 ) | {!isSidebarCollapsed && (
+4415: 15 ( +1 -0 ) | <div
+4416: 15 ( +0 -0 ) | className="fixed inset-0 bg-slate-950/60 backdrop-
+4417: 15 ( +0 -0 ) | onClick={() => setIsSidebarCollapsed(true)}
+4418: 15 ( +0 -0 ) | />
+4419: 15 ( +0 -0 ) | )}
+4420: 15 ( +0 -0 ) | 
+4421: 15 ( +0 -0 ) | <aside className={`bg-[#020617] text-white p-4 fix
+4422: 15 ( +0 -0 ) | ? 'translate-x-0 w-80'
+4423: 15 ( +0 -0 ) | : '-translate-x-full md:translate-x-0 md:w-24')
+4424: 15 ( +0 -0 ) | }`}>
+4425: 15 ( +0 -0 ) | 
+4426: 15 ( +0 -0 ) | 
+4427: 16 ( +1 -0 ) | <div className={`flex items-center gap-4 mb-16 ${!
+4428: 16 ( +0 -0 ) | <button
+4429: 16 ( +0 -0 ) | onClick={() => navigate('/')}
+4430: 16 ( +0 -0 ) | className="w-14 h-14 bg-white/10 backdrop-blur-xl 
+4431: 16 ( +0 -0 ) | >
+4432: 16 ( +0 -0 ) | <img src="https://res.cloudinary.com/dmifhcisp/ima
+4433: 16 ( +0 -0 ) | </button>
+4434: 16 ( +0 -0 ) | {!isSidebarCollapsed && (
+4435: 17 ( +1 -0 ) | <div className="hidden md:block animate-in fade-in
+4436: 17 ( +0 -0 ) | <h1 className="font-black text-xl uppercase tracki
+4437: 17 ( +0 -0 ) | <p className="text-[9px] text-slate-500 font-black
+4438: 16 ( +0 -1 ) | </div>
+4439: 16 ( +0 -0 ) | )}
+4440: 15 ( +0 -1 ) | </div>
+4441: 15 ( +0 -0 ) | 
+4442: 15 ( +0 -0 ) | <nav className="space-y-3 flex-1 overflow-y-auto">
+4443: 15 ( +0 -0 ) | {(currentUser?.role === 'asesor' ? [
+4444: 15 ( +0 -0 ) | { id: 'leads', icon: 'person_search', label: 'Pros
+4445: 15 ( +0 -0 ) | { id: 'advisor-properties', icon: 'domain', label:
+4446: 15 ( +0 -0 ) | { id: 'team', icon: 'diversity_3', label: 'Magno A
+4447: 15 ( +0 -0 ) | ...(advisorProfile?.advisor_type === 'cerrador' ? 
+4448: 15 ( +0 -0 ) | { id: 'investigations', icon: 'fact_check', label:
+4449: 15 ( +0 -0 ) | { id: 'archived_potential', icon: 'archive', label
+4450: 15 ( +0 -0 ) | ] : [])
+4451: 15 ( +0 -0 ) | ] : [
+4452: 15 ( +0 -0 ) | { id: 'inventory', icon: 'real_estate_agent', labe
+4453: 15 ( +0 -0 ) | { id: 'leads', icon: 'person_search', label: 'Pros
+4454: 15 ( +0 -0 ) | { id: 'comprobantes', icon: 'receipt_long', label:
+4455: 15 ( +0 -0 ) | { id: 'reports', icon: 'report_problem', label: 'R
+4456: 15 ( +0 -0 ) | { id: 'appraisals', icon: 'analytics', label: 'Val
+4457: 15 ( +0 -0 ) | { id: 'recruitments', icon: 'campaign', label: 'Re
+4458: 15 ( +0 -0 ) | { id: 'rental-apps', icon: 'home_work', label: 'So
+4459: 15 ( +0 -0 ) | { id: 'signed-docs', icon: 'folder_open', label: '
+4460: 15 ( +0 -0 ) | { id: 'investigations', icon: 'fact_check', label:
+4461: 15 ( +0 -0 ) | { id: 'archived_potential', icon: 'archive', label
+4462: 15 ( +0 -0 ) | // Removed potential and appointments from main si
+4463: 15 ( +0 -0 ) | { id: 'advisors-hub', icon: 'manage_accounts', lab
+4464: 15 ( +0 -0 ) | ]).filter(item => currentUser?.role && item.roles.
+4465: 15 ( +0 -0 ) | <button
+4466: 15 ( +0 -0 ) | key={item.id}
+4467: 15 ( +0 -0 ) | onClick={() => {
+4468: 15 ( +0 -0 ) | setActiveTab(item.id as any);
+4469: 15 ( +0 -0 ) | if (window.innerWidth < 768) setIsSidebarCollapsed
+4470: 15 ( +0 -0 ) | }}
+4471: 15 ( +0 -0 ) | className={`w-full flex items-center justify-cente
+4472: 15 ( +0 -0 ) | ? 'bg-white text-slate-950 shadow-[0_20px_40px_rgb
+4473: 15 ( +0 -0 ) | : 'text-slate-500 hover:text-white hover:bg-white/
+4474: 15 ( +0 -0 ) | }`}
+4475: 15 ( +0 -0 ) | >
+4476: 15 ( +0 -0 ) | <span className="material-symbols-outlined text-xl
+4477: 15 ( +0 -0 ) | 
+4478: 15 ( +0 -0 ) | {item.count && item.count > 0 && (
+4479: 15 ( +0 -0 ) | <span className={`absolute top-2 right-2 ${item.co
+4480: 15 ( +0 -0 ) | )}
+4481: 15 ( +0 -0 ) | 
+4482: 15 ( +0 -0 ) | {/* Premium Floating Tooltip */}
+4483: 16 ( +1 -0 ) | <div className="absolute left-[calc(100%+15px)] px
+4484: 16 ( +0 -0 ) | {item.label}
+4485: 16 ( +0 -0 ) | {item.count && item.count > 0 && <span className="
+4486: 16 ( +0 -0 ) | {/* Tooltip Arrow */}
+4487: 16 ( +1 -1 ) | <div className="absolute top-1/2 -left-1 -translat
+4488: 15 ( +0 -1 ) | </div>
+4489: 15 ( +0 -0 ) | </button>
+4490: 15 ( +0 -0 ) | ))}
+4491: 15 ( +0 -0 ) | </nav>
+4492: 15 ( +0 -0 ) | 
+4493: 15 ( +0 -0 ) | {currentUserRole === 'admin' && (
+4494: 16 ( +1 -0 ) | <div className="mt-auto pt-6 border-t border-white
+4495: 16 ( +0 -0 ) | <button
+4496: 16 ( +0 -0 ) | onClick={() => {
+4497: 16 ( +0 -0 ) | setActiveTab('administration-hub');
+4498: 16 ( +0 -0 ) | if (window.innerWidth < 768) setIsSidebarCollapsed
+4499: 16 ( +0 -0 ) | }}
+4500: 16 ( +0 -0 ) | className={`w-14 h-14 flex items-center justify-ce
+4501: 16 ( +0 -0 ) | ? 'bg-primary text-white shadow-[0_10px_30px_rgba(
+4502: 16 ( +0 -0 ) | : 'text-slate-500 hover:text-white hover:bg-white/
+4503: 16 ( +0 -0 ) | }`}
+4504: 16 ( +0 -0 ) | >
+4505: 16 ( +0 -0 ) | <span className="material-symbols-outlined text-2x
+4506: 17 ( +1 -0 ) | <div className="absolute left-[calc(100%+15px)] px
+4507: 17 ( +0 -0 ) | Administración
+4508: 17 ( +1 -1 ) | <div className="absolute top-1/2 -left-1 -translat
+4509: 16 ( +0 -1 ) | </div>
+4510: 16 ( +0 -0 ) | </button>
+4511: 15 ( +0 -1 ) | </div>
+4512: 15 ( +0 -0 ) | )}
+4513: 15 ( +0 -0 ) | 
+4514: 15 ( +0 -0 ) | {currentUserRole !== 'admin' && (
+4515: 16 ( +1 -0 ) | <div className="mt-auto pt-6 border-t border-white
+4516: 16 ( +0 -0 ) | {/* Intentional space to match layout height witho
+4517: 15 ( +0 -1 ) | </div>
+4518: 15 ( +0 -0 ) | )}
+4519: 15 ( +0 -0 ) | </aside>
+4520: 15 ( +0 -0 ) | 
+4521: 15 ( +0 -0 ) | <main className={`flex-1 p-4 md:p-12 lg:p-20 overf
+4522: 15 ( +0 -0 ) | {/* Header Action Bar - Hidden when an advisor is 
+4523: 15 ( +0 -0 ) | {!(activeTab === 'advisors' && selectedAdvisorId) 
+4524: 16 ( +1 -0 ) | <div className="relative z-20 flex flex-col lg:fle
+4525: 17 ( +1 -0 ) | <div>
+4526: 18 ( +1 -0 ) | <div className="flex items-center gap-4 mb-2">
+4527: 18 ( +0 -0 ) | {(activeTab === 'team' || activeTab === 'users-lis
+4528: 18 ( +0 -0 ) | <button
+4529: 18 ( +0 -0 ) | onClick={() => {
+4530: 18 ( +0 -0 ) | if (currentUserRole === 'asesor') {
+4531: 18 ( +0 -0 ) | setActiveTab('team');
+4532: 18 ( +0 -0 ) | return;
+4533: 18 ( +0 -0 ) | }
+4534: 18 ( +0 -0 ) | if (activeTab === 'advisors' || activeTab === 'lea
+4535: 18 ( +0 -0 ) | setActiveTab('advisors-hub');
+4536: 18 ( +0 -0 ) | } else {
+4537: 18 ( +0 -0 ) | setActiveTab('administration-hub');
+4538: 18 ( +0 -0 ) | }
+4539: 18 ( +0 -0 ) | }}
+4540: 18 ( +0 -0 ) | className="w-10 h-10 bg-white dark:bg-slate-800 ro
+4541: 18 ( +0 -0 ) | >
+4542: 18 ( +0 -0 ) | <span className="material-symbols-outlined text-lg
+4543: 18 ( +0 -0 ) | </button>
+4544: 18 ( +0 -0 ) | )}
+4545: 18 ( +0 -0 ) | <h2 className="text-3xl md:text-6xl font-extrabold
+4546: 18 ( +0 -0 ) | {activeTab === 'inventory' ? 'Inventario' :
+4547: 18 ( +0 -0 ) | activeTab === 'leads' ? 'Prospectos' :
+4548: 18 ( +0 -0 ) | activeTab === 'internal-props' ? 'Propiedades' :
+4549: 18 ( +0 -0 ) | activeTab === 'reports' ? 'Reportes' :
+4550: 18 ( +0 -0 ) | activeTab === 'comprobantes' ? 'Pagos' :
+4551: 18 ( +0 -0 ) | activeTab === 'appraisals' ? 'Valuaciones' :
+4552: 18 ( +0 -0 ) | activeTab === 'rental-apps' ? 'Solicitudes' :
+4553: 18 ( +0 -0 ) | activeTab === 'appointments' ? 'Citas' :
+4554: 18 ( +0 -0 ) | activeTab === 'users-list' ? 'Lista de Usuarios' :
+4555: 18 ( +0 -0 ) | activeTab === 'team' ? (currentUserRole === 'aseso
+4556: 18 ( +0 -0 ) | activeTab === 'advisors' ? 'Gestión de Asesores' :
+4557: 18 ( +0 -0 ) | activeTab === 'advisors-hub' ? 'Centro de Asesores
+4558: 18 ( +0 -0 ) | activeTab === 'blog' ? 'Blog & Noticias' :
+4559: 18 ( +0 -0 ) | activeTab === 'potential' ? 'Clientes Potenciales'
+4560: 18 ( +0 -0 ) | activeTab === 'signed-docs' ? 'Documentos' :
+4561: 18 ( +0 -0 ) | activeTab === 'landing-pages' ? 'Landing Pages' :
+4562: 18 ( +0 -0 ) | activeTab === 'advisor-properties' ? 'Catálogo de 
+4563: 18 ( +0 -0 ) | activeTab === 'administration-hub' ? 'Administraci
+4564: 18 ( +0 -0 ) | activeTab === 'client-panels' ? 'Accesos' :
+4565: 18 ( +0 -0 ) | activeTab === 'investigations' ? 'Resultados de In
+4566: 18 ( +0 -0 ) | activeTab === 'archived_potential' ? 'Archivo de I
+4567: 18 ( +0 -0 ) | 'Accesos'}
+4568: 18 ( +0 -0 ) | </h2>
+4569: 17 ( +0 -1 ) | </div>
+4570: 18 ( +1 -0 ) | <div className="flex items-center gap-2">
+4571: 18 ( +0 -0 ) | <span className="w-2 h-2 rounded-full bg-primary a
+4572: 18 ( +0 -0 ) | <p className="text-[8px] md:text-[10px] font-black
+4573: 18 ( +0 -0 ) | {activeTab === 'leads' ? 'Seguimiento y conversión
+4574: 18 ( +0 -0 ) | activeTab === 'users-list' ? 'Gestión total de cue
+4575: 18 ( +0 -0 ) | activeTab === 'blog' ? 'Editor de contenidos y nov
+4576: 18 ( +0 -0 ) | activeTab === 'team' ? (currentUserRole === 'aseso
+4577: 18 ( +0 -0 ) | activeTab === 'advisors' ? 'Control de prospectos,
+4578: 18 ( +0 -0 ) | activeTab === 'advisors-hub' ? 'Monitoreo de desem
+4579: 18 ( +0 -0 ) | activeTab === 'signed-docs' ? 'Archivo digital de 
+4580: 18 ( +0 -0 ) | activeTab === 'landing-pages' ? 'Gestión de página
+4581: 18 ( +0 -0 ) | activeTab === 'advisor-properties' ? 'Explora, com
+4582: 18 ( +0 -0 ) | activeTab === 'administration-hub' ? 'Centro de ma
+4583: 18 ( +0 -0 ) | activeTab === 'investigations' ? 'Revisión y calif
+4584: 18 ( +0 -0 ) | 'Magno Global Management System'}
+4585: 18 ( +0 -0 ) | </p>
+4586: 17 ( +0 -1 ) | </div>
+4587: 16 ( +0 -1 ) | </div>
+4588: 16 ( +0 -0 ) | 
+4589: 17 ( +1 -0 ) | <div className="flex flex-wrap items-center gap-2 
+4590: 17 ( +0 -0 ) | {/* Notification Bell */}
+4591: 17 ( +0 -0 ) | <button
+4592: 17 ( +0 -0 ) | type="button"
+4593: 17 ( +0 -0 ) | onClick={(e) => { e.preventDefault(); setShowNotif
+4594: 17 ( +0 -0 ) | className="relative w-12 h-12 bg-white dark:bg-sla
+4595: 17 ( +0 -0 ) | >
+4596: 17 ( +0 -0 ) | <span className="material-symbols-outlined text-xl
+4597: 17 ( +0 -0 ) | {notifications.filter(n => !n.isRead).length > 0 &
+4598: 17 ( +0 -0 ) | <span className="absolute -top-1 -right-1 w-6 h-6 
+4599: 17 ( +0 -0 ) | {notifications.filter(n => !n.isRead).length}
+4600: 17 ( +0 -0 ) | </span>
+7904: 32 ( +0 -1 ) | </div>
+7905: 31 ( +0 -1 ) | </div>
+7911: 32 ( +1 -0 ) | <div className="fixed inset-0 z-[350] bg-black/80 
+7913: 33 ( +1 -0 ) | <div className="bg-white dark:bg-[#0f172a] w-full 
+7923: 34 ( +1 -0 ) | <div className="px-10 pt-12 pb-10 border-b border-
+7924: 35 ( +1 -0 ) | <div className="w-16 h-16 bg-primary/10 text-prima
+7926: 34 ( +0 -1 ) | </div>
+7937: 33 ( +0 -1 ) | </div>
+7939: 34 ( +1 -0 ) | <div className="flex-1 p-10 space-y-10">
+7941: 35 ( +1 -0 ) | <div>
+7942: 36 ( +1 -0 ) | <div className="flex items-center gap-3 mb-6">
+7945: 35 ( +0 -1 ) | </div>
+7946: 36 ( +1 -0 ) | <div className="relative px-2 py-4">
+7950: 37 ( +1 -0 ) | <div className="flex flex-col gap-8">
+7987: 38 ( +1 -0 ) | <div key={step.id} className="relative z-10 flex i
+7988: 39 ( +1 -0 ) | <div className={`w-11 h-11 rounded-2xl flex items-
+7995: 38 ( +0 -1 ) | </div>
+7996: 39 ( +1 -0 ) | <div className="flex flex-col">
+8003: 38 ( +0 -1 ) | </div>
+8004: 37 ( +0 -1 ) | </div>
+8008: 36 ( +0 -1 ) | </div>
+8009: 35 ( +0 -1 ) | </div>
+8010: 34 ( +0 -1 ) | </div>
+8013: 35 ( +1 -0 ) | <div className="grid grid-cols-1 gap-6">
+8014: 36 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 p-6 ro
+8019: 35 ( +0 -1 ) | </div>
+8020: 36 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 p-6 ro
+8025: 35 ( +0 -1 ) | </div>
+8026: 34 ( +0 -1 ) | </div>
+8029: 35 ( +1 -0 ) | <div>
+8030: 36 ( +1 -0 ) | <div className="flex items-center gap-3 mb-6">
+8033: 35 ( +0 -1 ) | </div>
+8035: 36 ( +1 -0 ) | <div className="space-y-4">
+8038: 37 ( +1 -0 ) | <div className="bg-primary/5 border border-primary
+8053: 38 ( +1 -0 ) | <div className="flex flex-wrap gap-4 justify-cente
+8072: 37 ( +0 -1 ) | </div>
+8073: 36 ( +0 -1 ) | </div>
+8078: 37 ( +1 -0 ) | <div className="bg-amber-500/10 border border-ambe
+8082: 38 ( +1 -0 ) | <div className="flex flex-wrap gap-4 justify-cente
+8084: 39 ( +1 -0 ) | <div className="space-y-6 w-full">
+8085: 40 ( +1 -0 ) | <div className="bg-blue-500/10 border border-blue-
+8089: 39 ( +0 -1 ) | </div>
+8097: 38 ( +0 -1 ) | </div>
+8122: 37 ( +0 -1 ) | </div>
+8123: 36 ( +0 -1 ) | </div>
+8127: 37 ( +1 -0 ) | <div className="bg-blue-500/10 border border-blue-
+8131: 38 ( +1 -0 ) | <div className="flex flex-col gap-4 w-full">
+8143: 39 ( +1 -0 ) | <div className="mt-8 pt-6 border-t border-slate-10
+8144: 40 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8147: 41 ( +1 -0 ) | <div className="grid grid-cols-2 gap-4">
+8148: 42 ( +1 -0 ) | <div>
+8151: 41 ( +0 -1 ) | </div>
+8152: 42 ( +1 -0 ) | <div>
+8155: 41 ( +0 -1 ) | </div>
+8156: 42 ( +1 -0 ) | <div>
+8159: 41 ( +0 -1 ) | </div>
+8160: 42 ( +1 -0 ) | <div>
+8163: 41 ( +0 -1 ) | </div>
+8164: 40 ( +0 -1 ) | </div>
+8166: 41 ( +1 -0 ) | <div className="pt-2">
+8169: 40 ( +0 -1 ) | </div>
+8170: 39 ( +0 -1 ) | </div>
+8172: 40 ( +1 -0 ) | <div className="space-y-4">
+8188: 39 ( +0 -1 ) | </div>
+8189: 38 ( +0 -1 ) | </div>
+8191: 37 ( +0 -1 ) | </div>
+8192: 36 ( +0 -1 ) | </div>
+8196: 37 ( +1 -0 ) | <div className="bg-purple-500/10 border border-pur
+8201: 38 ( +1 -0 ) | <div className="mt-4 w-full space-y-4">
+8203: 39 ( +1 -0 ) | <div className="flex gap-2">
+8211: 38 ( +0 -1 ) | </div>
+8212: 37 ( +0 -1 ) | </div>
+8218: 38 ( +1 -0 ) | <div className="flex flex-wrap gap-4 justify-cente
+8222: 37 ( +0 -1 ) | </div>
+8224: 36 ( +0 -1 ) | </div>
+8228: 37 ( +1 -0 ) | <div className="bg-green-500/10 border border-gree
+8239: 36 ( +0 -1 ) | </div>
+8243: 37 ( +1 -0 ) | <div className="bg-amber-500/10 border border-ambe
+8262: 36 ( +0 -1 ) | </div>
+8266: 37 ( +1 -0 ) | <div className="bg-green-500 p-10 rounded-[2.5rem]
+8275: 36 ( +0 -1 ) | </div>
+8284: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[400] bg-black/80 
+8285: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8290: 39 ( +1 -0 ) | <div className="flex items-center gap-4 mb-10">
+8291: 40 ( +1 -0 ) | <div className="w-14 h-14 bg-green-500/10 text-gre
+8293: 39 ( +0 -1 ) | </div>
+8294: 40 ( +1 -0 ) | <div>
+8297: 39 ( +0 -1 ) | </div>
+8298: 38 ( +0 -1 ) | </div>
+8301: 39 ( +1 -0 ) | <div className="space-y-8 animate-in fade-in slide
+8302: 40 ( +1 -0 ) | <div className="bg-amber-50 dark:bg-amber-900/10 b
+8303: 41 ( +1 -0 ) | <div className="flex items-center gap-4 mb-4 text-
+8306: 40 ( +0 -1 ) | </div>
+8311: 41 ( +1 -0 ) | <div className="mt-6 pt-6 border-t border-amber-20
+8316: 40 ( +0 -1 ) | </div>
+8317: 39 ( +0 -1 ) | </div>
+8337: 40 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-slate-950 p-6 
+8347: 39 ( +0 -1 ) | </div>
+8364: 38 ( +0 -1 ) | </div>
+8395: 39 ( +1 -0 ) | <div className="space-y-2">
+8397: 40 ( +1 -0 ) | <div className="flex gap-4">
+8406: 39 ( +0 -1 ) | </div>
+8407: 38 ( +0 -1 ) | </div>
+8408: 39 ( +1 -0 ) | <div className="space-y-2">
+8417: 38 ( +0 -1 ) | </div>
+8419: 39 ( +1 -0 ) | <div className="space-y-2">
+8422: 38 ( +0 -1 ) | </div>
+8432: 37 ( +0 -1 ) | </div>
+8433: 36 ( +0 -1 ) | </div>
+8440: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[250] bg-black/80 
+8441: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8442: 39 ( +1 -0 ) | <div className="w-20 h-20 bg-red-50 dark:bg-red-50
+8444: 38 ( +0 -1 ) | </div>
+8451: 39 ( +1 -0 ) | <div className="flex flex-col gap-3">
+8467: 38 ( +0 -1 ) | </div>
+8468: 37 ( +0 -1 ) | </div>
+8469: 36 ( +0 -1 ) | </div>
+8490: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[300] bg-white/40 
+8491: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8493: 39 ( +1 -0 ) | <div className="relative w-24 h-24 mb-10">
+8496: 40 ( +1 -0 ) | <div className="absolute inset-0 flex items-center
+8498: 39 ( +0 -1 ) | </div>
+8499: 38 ( +0 -1 ) | </div>
+8510: 39 ( +1 -0 ) | <div className="w-full h-1 bg-slate-100 dark:bg-sl
+8512: 38 ( +0 -1 ) | </div>
+8513: 37 ( +0 -1 ) | </div>
+8514: 36 ( +0 -1 ) | </div>
+8520: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[500] bg-black/80 
+8521: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8535: 39 ( +1 -0 ) | <div className="text-center mb-10">
+8536: 40 ( +1 -0 ) | <div className="w-16 h-16 bg-primary/10 text-prima
+8538: 39 ( +0 -1 ) | </div>
+8541: 38 ( +0 -1 ) | </div>
+8542: 39 ( +1 -0 ) | <div className="grid grid-cols-1 gap-4">
+8551: 40 ( +1 -0 ) | <div className="w-12 h-12 bg-blue-500/10 text-blue
+8553: 39 ( +0 -1 ) | </div>
+8554: 40 ( +1 -0 ) | <div className="text-left">
+8557: 39 ( +0 -1 ) | </div>
+8567: 40 ( +1 -0 ) | <div className="w-12 h-12 bg-amber-500/10 text-amb
+8569: 39 ( +0 -1 ) | </div>
+8570: 40 ( +1 -0 ) | <div className="text-left">
+8573: 39 ( +0 -1 ) | </div>
+8575: 38 ( +0 -1 ) | </div>
+8578: 39 ( +1 -0 ) | <div className="text-center">
+8579: 40 ( +1 -0 ) | <div className="w-20 h-20 bg-green-500/10 text-gre
+8583: 41 ( +1 -0 ) | <div className="absolute -bottom-2 -right-2 w-8 h-
+8585: 40 ( +0 -1 ) | </div>
+8586: 39 ( +0 -1 ) | </div>
+8593: 40 ( +1 -0 ) | <div className="space-y-4">
+8619: 39 ( +0 -1 ) | </div>
+8620: 38 ( +0 -1 ) | </div>
+8630: 37 ( +0 -1 ) | </div>
+8631: 36 ( +0 -1 ) | </div>
+8644: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[500] bg-black/80 
+8645: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8656: 39 ( +1 -0 ) | <div className="text-center mb-8">
+8657: 40 ( +1 -0 ) | <div className="w-16 h-16 bg-emerald-500/10 text-e
+8659: 39 ( +0 -1 ) | </div>
+8666: 38 ( +0 -1 ) | </div>
+8669: 39 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8673: 40 ( +1 -0 ) | <div className="grid grid-cols-2 gap-4">
+8674: 41 ( +1 -0 ) | <div>
+8679: 40 ( +0 -1 ) | </div>
+8680: 41 ( +1 -0 ) | <div>
+8685: 40 ( +0 -1 ) | </div>
+8686: 41 ( +1 -0 ) | <div className="col-span-2">
+8691: 40 ( +0 -1 ) | </div>
+8692: 41 ( +1 -0 ) | <div className="col-span-2">
+8694: 42 ( +1 -0 ) | <div className="bg-white dark:bg-slate-800/50 roun
+8709: 41 ( +0 -1 ) | </div>
+8710: 40 ( +0 -1 ) | </div>
+8711: 39 ( +0 -1 ) | </div>
+8712: 38 ( +0 -1 ) | </div>
+8715: 39 ( +1 -0 ) | <div className="mb-6">
+8718: 40 ( +1 -0 ) | <div className="bg-slate-100 dark:bg-slate-800 rou
+8720: 41 ( +1 -0 ) | <div>
+8728: 40 ( +0 -1 ) | </div>
+8729: 39 ( +0 -1 ) | </div>
+8738: 38 ( +0 -1 ) | </div>
+8741: 39 ( +1 -0 ) | <div className="mb-8">
+8755: 38 ( +0 -1 ) | </div>
+8758: 39 ( +1 -0 ) | <div className="flex gap-4">
+8776: 38 ( +0 -1 ) | </div>
+8777: 37 ( +0 -1 ) | </div>
+8778: 36 ( +0 -1 ) | </div>
+8811: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[500] bg-black/90 
+8812: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8822: 39 ( +1 -0 ) | <div className="text-center mb-8">
+8823: 40 ( +1 -0 ) | <div className="w-16 h-16 bg-amber-500/10 text-amb
+8825: 39 ( +0 -1 ) | </div>
+8832: 38 ( +0 -1 ) | </div>
+8834: 39 ( +1 -0 ) | <div className="grid grid-cols-1 lg:grid-cols-2 ga
+8836: 40 ( +1 -0 ) | <div>
+8839: 41 ( +1 -0 ) | <div className="bg-slate-100 dark:bg-slate-800 rou
+8841: 42 ( +1 -0 ) | <div className="text-center">
+8849: 41 ( +0 -1 ) | </div>
+8850: 40 ( +0 -1 ) | </div>
+8859: 39 ( +0 -1 ) | </div>
+8862: 40 ( +1 -0 ) | <div className="space-y-6">
+8864: 41 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8866: 42 ( +1 -0 ) | <div className="flex items-center gap-2">
+8877: 41 ( +0 -1 ) | </div>
+8878: 40 ( +0 -1 ) | </div>
+8881: 41 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8886: 42 ( +1 -0 ) | <div className="space-y-2">
+8887: 43 ( +1 -0 ) | <div className="flex items-center gap-2">
+8892: 42 ( +0 -1 ) | </div>
+8893: 43 ( +1 -0 ) | <div className="flex items-center gap-2">
+8898: 42 ( +0 -1 ) | </div>
+8899: 41 ( +0 -1 ) | </div>
+8900: 40 ( +0 -1 ) | </div>
+8903: 41 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8914: 40 ( +0 -1 ) | </div>
+8917: 41 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8922: 40 ( +0 -1 ) | </div>
+8925: 41 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+8927: 42 ( +1 -0 ) | <div className="flex items-center gap-2">
+8934: 41 ( +0 -1 ) | </div>
+8935: 40 ( +0 -1 ) | </div>
+8936: 39 ( +0 -1 ) | </div>
+8937: 38 ( +0 -1 ) | </div>
+8940: 39 ( +1 -0 ) | <div className="flex items-center justify-between 
+8972: 38 ( +0 -1 ) | </div>
+8973: 37 ( +0 -1 ) | </div>
+8974: 36 ( +0 -1 ) | </div>
+8981: 37 ( +1 -0 ) | <div className="fixed inset-0 z-[500] bg-black/80 
+8982: 38 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+8990: 39 ( +1 -0 ) | <div className="text-center mb-8">
+8991: 40 ( +1 -0 ) | <div className="w-16 h-16 bg-green-500/10 text-gre
+8993: 39 ( +0 -1 ) | </div>
+9000: 38 ( +0 -1 ) | </div>
+9002: 39 ( +1 -0 ) | <div className="bg-slate-50 dark:bg-white/5 rounde
+9006: 40 ( +1 -0 ) | <div className="space-y-4">
+9007: 41 ( +1 -0 ) | <div className="flex justify-between items-center"
+9012: 40 ( +0 -1 ) | </div>
+9013: 41 ( +1 -0 ) | <div className="flex justify-between items-center"
+9018: 40 ( +0 -1 ) | </div>
+9019: 41 ( +1 -0 ) | <div className="flex justify-between items-center"
+9024: 40 ( +0 -1 ) | </div>
+9025: 39 ( +0 -1 ) | </div>
+9026: 38 ( +0 -1 ) | </div>
+9028: 39 ( +1 -0 ) | <div className="flex gap-4">
+9042: 38 ( +0 -1 ) | </div>
+9043: 37 ( +0 -1 ) | </div>
+9044: 36 ( +0 -1 ) | </div>
+9046: 35 ( +0 -1 ) | </div>
+9047: 34 ( +0 -1 ) | </div>
+9048: 33 ( +0 -1 ) | </div>
+9053: 34 ( +1 -0 ) | <div className="fixed inset-0 z-[400] bg-black/80 
+9054: 35 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+9059: 36 ( +1 -0 ) | <div className="flex flex-col items-center mb-6 re
+9060: 37 ( +1 -0 ) | <div className="w-16 h-16 bg-indigo-500/10 text-in
+9062: 36 ( +0 -1 ) | </div>
+9069: 35 ( +0 -1 ) | </div>
+9072: 36 ( +1 -0 ) | <div className="grid grid-cols-1 gap-4">
+9073: 37 ( +1 -0 ) | <div className="space-y-2">
+9076: 36 ( +0 -1 ) | </div>
+9077: 37 ( +1 -0 ) | <div className="space-y-2">
+9080: 36 ( +0 -1 ) | </div>
+9081: 35 ( +0 -1 ) | </div>
+9083: 36 ( +1 -0 ) | <div className="space-y-3">
+9085: 37 ( +1 -0 ) | <div className="grid grid-cols-1 gap-4">
+9092: 38 ( +1 -0 ) | <div className="p-4 rounded-2xl border-2 border-sl
+9095: 37 ( +0 -1 ) | </div>
+9102: 37 ( +0 -0 ) | }} />
+9103: 38 ( +1 -0 ) | <div className="p-4 rounded-2xl border-2 border-sl
+9104: 38 ( +0 -0 ) | <span className="material-symbols-outlined text-2x
+9105: 38 ( +0 -0 ) | <span className="text-[9px] font-black uppercase t
+9106: 37 ( +0 -1 ) | </div>
+9107: 37 ( +0 -0 ) | </label>
+9108: 37 ( +0 -0 ) | 
+9109: 36 ( +0 -1 ) | </div>
+9110: 35 ( +0 -1 ) | </div>
+9111: 35 ( +0 -0 ) | 
+9112: 36 ( +1 -0 ) | <div id="physical-warning" className="hidden anima
+9113: 37 ( +1 -0 ) | <div className="bg-amber-50 dark:bg-amber-500/10 b
+9114: 37 ( +0 -0 ) | <p className="text-[10px] text-amber-800/80 dark:t
+9115: 37 ( +0 -0 ) | <strong className="block uppercase text-[9px] mb-1
+9116: 37 ( +0 -0 ) | Procura reunirte con personas confiables y en luga
+9117: 37 ( +0 -0 ) | </p>
+9118: 36 ( +0 -1 ) | </div>
+9119: 35 ( +0 -1 ) | </div>
+9120: 35 ( +0 -0 ) | 
+9121: 35 ( +0 -0 ) | <button type="submit" className="w-full py-5 bg-in
+9122: 35 ( +0 -0 ) | Agendar Cita
+9123: 35 ( +0 -0 ) | </button>
+9124: 35 ( +0 -0 ) | </form>
+9125: 34 ( +0 -1 ) | </div>
+9126: 33 ( +0 -1 ) | </div>
+9127: 33 ( +0 -0 ) | )
+9128: 33 ( +0 -0 ) | }
+9129: 33 ( +0 -0 ) | 
+9130: 33 ( +0 -0 ) | {
+9131: 33 ( +0 -0 ) | showCancellationModal && (
+9132: 34 ( +1 -0 ) | <div className="fixed inset-0 z-[400] bg-black/90 
+9133: 35 ( +1 -0 ) | <div className="bg-white dark:bg-slate-900 w-full 
+9134: 35 ( +0 -0 ) | <h3 className="text-2xl font-black uppercase track
+9135: 35 ( +0 -0 ) | <p className="text-[10px] text-slate-400 font-bold
+9136: 35 ( +0 -0 ) | 
+9137: 36 ( +1 -0 ) | <div className="space-y-4 mb-10">
+9138: 36 ( +0 -0 ) | {[
+9139: 36 ( +0 -0 ) | 'El cliente ya no quiere seguir el proceso',
+9140: 36 ( +0 -0 ) | 'No le gustó la propiedad',
+9141: 36 ( +0 -0 ) | 'No realizó el pago de la investigación tras una s
+9142: 36 ( +0 -0 ) | 'Otro cliente pagó la investigación (le ganaron)'
+9143: 36 ( +0 -0 ) | ].map(reason => (
+9144: 36 ( +0 -0 ) | <button
+9145: 36 ( +0 -0 ) | key={reason}
+9146: 36 ( +0 -0 ) | onClick={() => setCancellationReason(reason)}
+9147: 36 ( +0 -0 ) | className={`w-full p-6 rounded-2xl border text-lef
+9148: 36 ( +0 -0 ) | >
+9149: 36 ( +0 -0 ) | {reason}
+9150: 36 ( +0 -0 ) | </button>
+9151: 36 ( +0 -0 ) | ))}
+9152: 35 ( +0 -1 ) | </div>
+9153: 35 ( +0 -0 ) | 
+9154: 35 ( +0 -0 ) | <textarea
+9155: 35 ( +0 -0 ) | placeholder="Notas adicionales (opcional)..."
+9156: 35 ( +0 -0 ) | className="w-full bg-slate-50 dark:bg-white/5 bord
+9157: 35 ( +0 -0 ) | value={cancellationNotes}
+9158: 35 ( +0 -0 ) | onChange={(e) => setCancellationNotes(e.target.val
+9159: 35 ( +0 -0 ) | />
+9160: 35 ( +0 -0 ) | 
+9161: 36 ( +1 -0 ) | <div className="flex gap-4">
+9162: 36 ( +0 -0 ) | <button onClick={() => setShowCancellationModal(fa
+9163: 36 ( +0 -0 ) | <button
+9164: 36 ( +0 -0 ) | disabled={!cancellationReason || isProcessingCance
+9165: 36 ( +0 -0 ) | onClick={() => handleCancelProcess(cancellationRea
+9166: 36 ( +0 -0 ) | className="flex-1 py-5 rounded-2xl bg-red-500 text
+9167: 36 ( +0 -0 ) | >
+9168: 36 ( +0 -0 ) | {isProcessingCancellation ? 'Cancelando...' : 'Con
+9169: 36 ( +0 -0 ) | </button>
+9170: 35 ( +0 -1 ) | </div>
+9171: 34 ( +0 -1 ) | </div>
+9172: 33 ( +0 -1 ) | </div>
+9173: 33 ( +0 -0 ) | )
+9174: 33 ( +0 -0 ) | }
+9175: 33 ( +0 -0 ) | </main>
+9176: 32 ( +0 -1 ) | </div>
+9177: 32 ( +0 -0 ) | );
+9178: 32 ( +0 -0 ) | };
+9179: 32 ( +0 -0 ) | 
+9180: 32 ( +0 -0 ) | export default AdminDashboard;
+9181: 32 ( +0 -0 ) | 

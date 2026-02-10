@@ -98,9 +98,16 @@ const ClientPortal: React.FC = () => {
 
                     const mappedSubs = subData.map((s: any) => {
                         const fd = JSON.parse(JSON.stringify(s.form_data || {})); // Ensure clean object
+                        // Determine display title
+                        let displayTitle = fd.title || fd.titulo;
+                        if (!displayTitle) {
+                            if (s.status === 'draft') displayTitle = `${s.type === 'sale' ? 'Venta' : 'Renta'} - Registro en proceso`;
+                            else displayTitle = `${s.type === 'sale' ? 'Venta' : 'Renta'} en revisión`;
+                        }
+
                         return {
                             id: s.id,
-                            title: fd.title || fd.titulo || `${s.type === 'sale' ? 'Venta' : 'Renta'} en revisión`,
+                            title: displayTitle,
                             address: fd.address || fd.direccion || 'Dirección en proceso',
                             mainImage: fd.main_image_url || fd.foto_principal || fd.main_image || null,
                             status: s.status === 'pending' ? 'En Revisión' : (s.status === 'changes_requested' ? 'Requerido' : (s.status === 'approved' ? 'Aprobado' : 'Borrador')),
@@ -108,6 +115,7 @@ const ClientPortal: React.FC = () => {
                             ownerId: s.owner_id,
                             is_submission: true,
                             submission_id: s.id,
+                            current_step: fd.current_step || 1, // Capture current step
                             ref: fd.ref || 'PROV-' + s.id.substring(0, 6).toUpperCase(),
                             specs: {
                                 beds: fd.rooms || fd.recamaras || 0,
@@ -488,13 +496,17 @@ const ClientPortal: React.FC = () => {
                                                             ? '¡Tu propiedad ya fue aprobada! La estamos subiendo a todos los portales para darle una difusión rápida y eficiente. Te notificaremos en cuanto esté en vivo.'
                                                             : sub.status === 'pending'
                                                                 ? 'Tu propiedad está siendo validada por nuestro equipo.'
-                                                                : `Tienes un borrador pendiente para ${sub.type === 'sale' ? 'venta' : 'renta'}.`}
+                                                                : `Tienes un borrador pendiente para ${sub.type === 'sale' ? 'venta' : 'renta'} (Paso ${(sub.current_step || 1)}).`}
                                             </p>
                                         </div>
                                     </div>
                                     {sub.status === 'draft' || sub.status === 'changes_requested' || (sub.status === 'pending' && !sub.is_signed) ? (
                                         <button
-                                            onClick={() => navigate(sub.type === 'sale' ? '/vender' : '/rentar')}
+                                            onClick={() => navigate(
+                                                sub.type === 'sale' ? '/vender' : '/rentar',
+                                                // If draft, pass state to resume correctly
+                                                sub.status === 'draft' ? { state: { resumeStep: sub.form_data?.current_step || null } } : {}
+                                            )}
                                             className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${sub.status === 'changes_requested' ? 'bg-amber-500 text-white hover:scale-105 active:scale-95' : sub.status === 'pending' && !sub.is_signed ? 'bg-rose-600 text-white hover:shadow-glow' : 'bg-primary text-white hover:shadow-glow'}`}
                                         >
                                             {sub.status === 'changes_requested' ? 'Ver Comentarios' : sub.status === 'pending' && !sub.is_signed ? 'Firmar Ahora' : 'Continuar Proceso'}
@@ -547,10 +559,21 @@ const ClientPortal: React.FC = () => {
                                                             navigate(`/property/${prop.id}`);
                                                         }
                                                     }}
-                                                    className="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-colors"
+                                                    className="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                                 >
                                                     {(prop as any).is_submission ? 'Ver Borrador' : 'Ver Detalles'}
                                                 </button>
+                                                {(prop as any).is_submission && (prop as any).status !== 'approved' && (
+                                                    <button
+                                                        onClick={() => navigate(
+                                                            (prop as any).type === 'sale' ? '/vender' : '/rentar',
+                                                            { state: { resumeStep: (prop as any).current_step || null } }
+                                                        )}
+                                                        className="w-full py-3 mt-3 bg-primary text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:shadow-glow hover:scale-[1.02] transition-all"
+                                                    >
+                                                        Continúa tu proceso
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

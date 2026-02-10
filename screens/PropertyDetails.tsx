@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Property } from '../types';
 import { getNearbyAmenities } from '../services/geminiService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import PropertyMap from '../components/PropertyMap';
 import { supabase } from '../services/supabaseClient';
+import { getReferral, captureReferral } from '../utils/referralTracking';
 import { useToast } from '../context/ToastContext';
 import { generateGoogleCalendarLink } from '../services/calendarService';
 
@@ -48,6 +49,9 @@ const FeatureSection: React.FC<{ title: string; features?: string[] }> = ({ titl
 
 const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const ref = searchParams.get('ref');
+
   const [loadingAmenities, setLoadingAmenities] = useState(false);
   const [amenitiesText, setAmenitiesText] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState('general');
@@ -92,6 +96,12 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
   ];
 
   useEffect(() => {
+    if (ref) {
+      captureReferral(ref);
+    }
+  }, [ref]);
+
+  useEffect(() => {
     fetchData('general');
   }, [property.address]);
 
@@ -123,7 +133,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
         appointment_date: appData.appointmentDate,
         appointment_time: appData.appointmentTime,
         status: 'pending',
-        application_type: type
+        application_type: type,
+        referred_by: getReferral()
       };
 
       const rentData = {
@@ -197,7 +208,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property }) => {
   };
 
   return (
-    <div className="pb-32 min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="pb-32 min-h-screen bg-white dark:bg-slate-950">
       {/* Lightbox Modal */}
       {activeImageIdx !== null && (
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setActiveImageIdx(null)}>

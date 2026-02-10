@@ -22,9 +22,10 @@ const TeamManagement: React.FC<TeamManagementProps> = ({ currentUser }) => {
         try {
             setLoading(true);
             // Fetch only admin, marketing, and asesor staff (exclude owners, tenants, guests)
+            // Fetch profiles joined with asesor_profiles for advisor types
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('*, asesor_profiles(advisor_type)')
                 .in('role', ['admin', 'marketing', 'asesor'])
                 .order('created_at', { ascending: false });
 
@@ -34,9 +35,9 @@ const TeamManagement: React.FC<TeamManagementProps> = ({ currentUser }) => {
             const users: User[] = (data || []).map(profile => ({
                 id: profile.id,
                 email: profile.email || '',
-                name: profile.name || 'Sin Nombre',
+                name: profile.full_name || profile.name || 'Sin Nombre',
                 role: profile.role as UserRole,
-                // Add other fields if needed
+                advisor_type: (profile as any).asesor_profiles?.advisor_type
             }));
 
             setTeamMembers(users);
@@ -118,7 +119,16 @@ const TeamManagement: React.FC<TeamManagementProps> = ({ currentUser }) => {
                                 >
                                     {member.role === 'marketing' ? 'Redes Sociales' :
                                         member.role === 'admin' ? 'Administrador' :
-                                            member.role === 'asesor' ? 'Asesor' : member.role}
+                                            member.role === 'asesor' ? (
+                                                <span className="flex items-center gap-1">
+                                                    Asesor
+                                                    {member.advisor_type && (
+                                                        <span className="opacity-50 text-[8px]">
+                                                            ({member.advisor_type})
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            ) : member.role}
                                 </div>
                             </div>
 

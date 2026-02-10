@@ -1,12 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PropertyPreview from '../components/PropertyPreview';
 import { pdf } from '@react-pdf/renderer';
 import RecruitmentPDF from '../components/documents/RecruitmentPDF';
 import KeyReceiptPDF from '../components/documents/KeyReceiptPDF';
 import { saveAs } from 'file-saver';
+import { getReferral } from '../utils/referralTracking';
 
 interface PropertySubmissionSaleProps {
     onCancel?: () => void;
@@ -19,6 +22,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
 
     // Form Data State
     const [formData, setFormData] = useState({
@@ -72,6 +76,10 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
     const [showPassword, setShowPassword] = useState(false);
     const [userSession, setUserSession] = useState<any>(null);
 
+    // Check for resume step from navigation
+    const location = useLocation();
+    const resumeStep = (location.state as any)?.resumeStep;
+
     useEffect(() => {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -80,13 +88,24 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                 // Only load draft if we have a user
                 const loadDraft = async () => {
                     const { data, error } = await supabase.from('property_submissions').select('*').eq('owner_id', user.id).eq('type', mode).in('status', ['draft', 'changes_requested']).order('created_at', { ascending: false }).limit(1).maybeSingle();
-                    if (data && !error) setFormData({ ...data.form_data, submission_id: data.id });
+                    if (data && !error) {
+                        setFormData({ ...data.form_data, submission_id: data.id });
+
+                        // Priority 1: Explicit resume step from navigation
+                        if (resumeStep) {
+                            setStep(resumeStep);
+                        }
+                        // Priority 2: Saved current step
+                        else if (data.form_data.current_step) {
+                            setStep(data.form_data.current_step);
+                        }
+                    }
                 };
                 loadDraft();
             }
         };
         checkUser();
-    }, []);
+    }, [resumeStep]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -99,7 +118,7 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
 
     const uploadFile = async (file: File, path: string) => {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${Math.random()}.${fileExt} `;
         const filePath = `${path}/${fileName}`;
         const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
         if (uploadError) throw uploadError;
@@ -189,37 +208,73 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
 
                 if (data.session) {
                     setUserSession(data.user);
-                    toastSuccess?.('¡Cuenta creada correctamente!');
+
+                    // IMMEDIATE DRAFT CREATION
+                    if (data.user) {
+                        const subData = {
+                            owner_id: data.user.id,
+                            type: 'sale',
+                            status: 'draft',
+                            form_data: formData,
+                            referred_by: getReferral()
+                        };
+                        const { data: sub, error: subError } = await supabase.from('property_submissions').insert([subData]).select().single();
+                        if (subError) console.error("Error creating draft:", subError);
+                        if (sub) setFormData(p => ({ ...p, submission_id: sub.id }));
+                    }
+
+                    toastSuccess?.('¡Cuenta creada y guardado automático!');
                     setStep(2);
                 } else if (data.user) {
-                    // User created but no session (maybe confirmation required?)
-                    // For the purpose of this task (frictionless), checking if session is null usually means email confirm needed.
-                    // If the project requires it, we warn user. If not, we proceed.
-                    // Assuming we can proceed or that we need to handle this.
-                    // For now, let's treat it as success but warn if no session.
                     toastSuccess?.('Cuenta creada. Por favor verifica tu correo si es necesario.');
-                    // We can't proceed to upload if we don't have a session usually (RLS).
-                    // But let's try to proceed.
                     setStep(2);
                 }
             } catch (err: any) {
                 console.error(err);
                 if (err.message.includes('already registered')) {
                     toastError?.('Este correo ya está registrado. Por favor inicia sesión primero.');
-                    // Optionally redirect to login or show login fields? 
-                    // For now just error.
                 } else {
                     toastError?.('Error al crear cuenta: ' + err.message);
                 }
             } finally {
                 setLoading(false);
             }
-        } else if (step === 5) {
-            setStep(step + 1);
-        } else if (step < 7) {
-            setStep(step + 1);
         } else {
-            handleSubmit();
+            // Auto-save logic for other steps
+            await autoSave();
+
+            if (step === 5) {
+                setStep(step + 1);
+            } else if (step < 7) {
+                setStep(step + 1);
+            } else {
+                handleSubmit();
+            }
+        }
+    };
+
+    const autoSave = async () => {
+        if (!userSession && !formData.submission_id) return;
+        try {
+            const user = userSession || (await supabase.auth.getUser()).data.user;
+            if (!user) return;
+
+            const subData = {
+                owner_id: user.id,
+                type: 'sale',
+                status: 'draft',
+                form_data: formData,
+                referred_by: getReferral()
+            };
+
+            if (formData.submission_id) {
+                await supabase.from('property_submissions').update(subData).eq('id', formData.submission_id);
+            } else {
+                const { data: sub } = await supabase.from('property_submissions').insert([subData]).select().single();
+                if (sub) setFormData(p => ({ ...p, submission_id: sub.id }));
+            }
+        } catch (e) {
+            console.error("Auto-save failed", e);
         }
     };
 
@@ -233,9 +288,29 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Sesión no encontrada');
 
-            const subData = { owner_id: user.id, type: 'sale', status: 'pending', form_data: formData };
+            const subData = {
+                owner_id: user.id,
+                type: 'sale',
+                status: 'pending',
+                form_data: formData,
+                referred_by: getReferral() // Capture advisor referral for commission tracking
+            };
             if (formData.submission_id) await supabase.from('property_submissions').update(subData).eq('id', formData.submission_id);
             else await supabase.from('property_submissions').insert([subData]);
+
+            // When property is submitted, move lead to "Firma de Contrato" (property_signing) if it exists
+            const { data: leads } = await supabase
+                .from('leads_prospectos')
+                .select('id')
+                .ilike('email', user.email)
+                .maybeSingle();
+
+            if (leads) {
+                await supabase
+                    .from('leads_prospectos')
+                    .update({ status: 'published', updated_at: new Date().toISOString() })
+                    .eq('id', leads.id);
+            }
 
             toastSuccess?.('Propiedad enviada para revisión.');
 
@@ -417,7 +492,41 @@ const PropertySubmissionSale: React.FC<PropertySubmissionSaleProps> = ({ onCance
                                     </button>
                                 </div>
                             )}
-
+                            {/* Exit Confirmation Modal */}
+                            {showExitConfirm && (
+                                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in duration-300">
+                                        <div className="text-center mb-6">
+                                            <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <span className="material-symbols-outlined text-4xl text-amber-500">warning</span>
+                                            </div>
+                                            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-2">
+                                                ¿Estás seguro de salir?
+                                            </h3>
+                                            <p className="text-sm font-bold text-slate-500 leading-relaxed uppercase tracking-wide">
+                                                Terminaremos tu registro más tarde.
+                                            </p>
+                                            <p className="text-xs text-slate-400 mt-2">
+                                                Recuerda que cada día que pasa es una oportunidad de venta menos. Puedes retomar cuando quieras desde tu panel.
+                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button
+                                                onClick={onCancel}
+                                                className="px-6 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-500 font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                            >
+                                                Salir por ahora
+                                            </button>
+                                            <button
+                                                onClick={() => setShowExitConfirm(false)}
+                                                className="px-6 py-6 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all"
+                                            >
+                                                Continuar Registro
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-slate-400 pl-3">Domicilio Particular</label>
                                 <input type="text" name="contact_home_address" value={formData.contact_home_address} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-none font-bold text-sm" />

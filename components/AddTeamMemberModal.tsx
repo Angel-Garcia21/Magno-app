@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { createClient } from '@supabase/supabase-js';
-import { UserRole } from '../types';
+import { UserRole, AdvisorType } from '../types';
 
 interface AddTeamMemberModalProps {
     onClose: () => void;
@@ -25,7 +25,8 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({ onClose, onSucc
         name: '',
         email: '',
         password: '',
-        role: 'marketing' as UserRole
+        role: 'marketing' as UserRole,
+        advisorType: 'cerrador' as AdvisorType
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +76,23 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({ onClose, onSucc
                         });
 
                     if (upsertError) throw upsertError;
+                }
+
+                // 3. Create or update advisor profile if role is 'asesor'
+                if (formData.role === 'asesor') {
+                    const { error: advisorError } = await supabase
+                        .from('asesor_profiles')
+                        .upsert({
+                            user_id: authData.user.id,
+                            advisor_type: formData.advisorType,
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (advisorError) {
+                        console.error('Advisor profile creation error:', advisorError);
+                        // Don't throw here to avoid failing user creation if only advisor profile fails
+                        // The dashboard will handle missing profiles later
+                    }
                 }
 
                 onSuccess();
@@ -246,6 +264,42 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({ onClose, onSucc
                                         : 'Acceso TOTAL: usuarios, propiedades y configuración.'}
                             </p>
                         </div>
+
+                        {/* Advisor Type Selection (Conditional) */}
+                        {formData.role === 'asesor' && (
+                            <div className="space-y-4 pt-2 animate-in slide-in-from-top-4 duration-500">
+                                <label className="text-xs font-black uppercase tracking-widest text-slate-400 pl-4">
+                                    Especialidad del Asesor
+                                </label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, advisorType: 'cerrador' }))}
+                                        className={`flex flex-col items-center gap-2 p-6 rounded-[2rem] border-2 transition-all duration-300
+                                            ${formData.advisorType === 'cerrador'
+                                                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500 text-emerald-600'
+                                                : 'bg-slate-50 dark:bg-black/20 border-transparent hover:border-slate-200 dark:hover:border-white/10 text-slate-400'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-3xl">handshake</span>
+                                        <span className="font-black uppercase tracking-tight text-xs">Cerrador</span>
+                                        <span className="text-[10px] opacity-70 font-medium lowercase">Ventas y Rentas</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, advisorType: 'opcionador' }))}
+                                        className={`flex flex-col items-center gap-2 p-6 rounded-[2rem] border-2 transition-all duration-300
+                                            ${formData.advisorType === 'opcionador'
+                                                ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-500 text-blue-600'
+                                                : 'bg-slate-50 dark:bg-black/20 border-transparent hover:border-slate-200 dark:hover:border-white/10 text-slate-400'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-3xl">add_home</span>
+                                        <span className="font-black uppercase tracking-tight text-xs">Opcionador</span>
+                                        <span className="text-[10px] opacity-70 font-medium lowercase">Reclutador</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Submit */}
                         <button

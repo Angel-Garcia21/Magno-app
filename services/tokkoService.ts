@@ -94,6 +94,43 @@ export const tokkoService = {
                 results.lastError = err.message;
             }
         }
+
+        // Cleanup: Deactivate properties that are no longer in Tokko response
+        try {
+            const currentTokkoIds = tokkoProperties.map((p: any) => p.id.toString());
+
+            // Get all Supabase properties that are currently marked AVAILABLE and came from Tokko
+            const { data: dbProps } = await supabase
+                .from('properties')
+                .select('id, tokko_id')
+                .eq('status', PropertyStatus.AVAILABLE)
+                .not('tokko_id', 'is', null);
+
+            if (dbProps) {
+                // Find properties that exist in DB but NOT in the fresh Tokko list
+                const propsToDeactivate = dbProps.filter(p => p.tokko_id && !currentTokkoIds.includes(p.tokko_id));
+
+                if (propsToDeactivate.length > 0) {
+                    console.log(`Found ${propsToDeactivate.length} properties to deactivate (removed from Tokko)`);
+                    const idsToUpdate = propsToDeactivate.map(p => p.id);
+
+                    // Bulk update status to PAUSED
+                    const { error: deactivateError } = await supabase
+                        .from('properties')
+                        .update({ status: PropertyStatus.PAUSED, updated_at: new Date().toISOString() })
+                        .in('id', idsToUpdate);
+
+                    if (deactivateError) {
+                        console.error('Error deactivating old properties:', deactivateError);
+                    } else {
+                        console.log(`Successfully deactivated ${idsToUpdate.length} properties.`);
+                    }
+                }
+            }
+        } catch (cleanupError) {
+            console.error('Error in Tokko cleanup:', cleanupError);
+        }
+
         console.log('Sync completed with results:', results);
         return results;
     },

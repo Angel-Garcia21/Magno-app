@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import { Property } from '../types';
+import { getReferral } from '../utils/referralTracking';
 import { useToast } from '../context/ToastContext';
 import { generateGoogleCalendarLink } from '../services/calendarService';
 
@@ -105,6 +106,7 @@ const GeneralApplication: React.FC = () => {
                 appointment_time: appData.appointmentTime,
                 status: 'pending',
                 application_type: type,
+                referred_by: getReferral(),
                 notes: appData.requirementsMismatch ? '⚠️ Cliente indicó NO cumplir con todos los requisitos.' : ''
             };
 

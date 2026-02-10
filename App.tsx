@@ -22,15 +22,28 @@ import PropertySubmissionSale from './screens/PropertySubmissionSale';
 import GeneralApplication from './screens/GeneralApplication';
 import ClientPortal from './screens/ClientPortal';
 import RentPropertyLanding from './screens/RentPropertyLanding';
+import AdvisorFicha from './screens/AdvisorFicha';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { supabase } from './services/supabaseClient';
+import { captureReferral, captureLeadId } from './utils/referralTracking';
 
 // Wrapper component to handle dynamic property lookup
 const PropertyDetailsWrapper: React.FC<{ properties: Property[] }> = ({ properties }) => {
   const { id } = useParams<{ id: string }>();
-  const property = properties.find(p => p.id === id) || properties[0];
+  const property = properties.find(p => p.id === id);
+
+  if (!property) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white mb-4">Propiedad no encontrada</h1>
+        <p className="text-slate-500 mb-8">La propiedad que buscas no existe o ha sido retirada.</p>
+        <button onClick={() => window.location.href = '/'} className="px-6 py-3 bg-primary text-white rounded-xl font-bold">Volver al Inicio</button>
+      </div>
+    );
+  }
+
   return <PropertyDetails property={property} />;
 };
 
@@ -50,6 +63,20 @@ const AppContent: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>(INITIAL_TIMELINE);
   const [loadingData, setLoadingData] = useState(true);
+
+  // Capture referral from URL query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    const leadId = params.get('leadId');
+
+    if (ref) {
+      captureReferral(ref);
+    }
+    if (leadId) {
+      captureLeadId(leadId);
+    }
+  }, []);
 
   // Fetch initial data
   useEffect(() => {
@@ -96,8 +123,8 @@ const AppContent: React.FC = () => {
         publicProps = ALL_PROPERTIES;
       }
 
-      // 2. Fetch All Profiles (for Admin)
-      if (user?.role === 'admin') {
+      // 2. Fetch All Profiles (for Admin/Staff)
+      if (user?.role === 'admin' || user?.role === 'asesor' || user?.role === 'marketing') {
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('*');
@@ -120,7 +147,9 @@ const AppContent: React.FC = () => {
             linkedName: u.linked_name,
             phoneContact: u.phone_contact,
             password: u.password,
-            vouchers: u.vouchers || []
+            vouchers: u.vouchers || [],
+            sold_count: u.sold_count || 0,
+            rented_count: u.rented_count || 0
           }));
           setUsers(mappedUsers);
         }
@@ -133,12 +162,50 @@ const AppContent: React.FC = () => {
 
       if (internalError) console.error('Error fetching internal properties:', internalError);
 
+      // 4. Fetch Property Submissions (Rental/Complex Flows)
+      const { data: submissionData, error: subError } = await supabase
+        .from('property_submissions')
+        .select('*')
+        .in('status', ['pending', 'approved']);
+
+      if (subError) console.error('Error fetching submissions:', subError);
+
+      const mappedSubmissions: Property[] = (submissionData || []).map((s: any) => {
+        const fd = s.form_data || {};
+        return {
+          id: s.id,
+          tokkoId: undefined,
+          ref: fd.ref || `SUB-${s.id.substring(0, 6).toUpperCase()}`,
+          title: fd.title || fd.titulo || `${s.type === 'sale' ? 'Venta' : 'Renta'} en Revisión`,
+          address: fd.address || fd.direccion || 'Dirección pendiente',
+          status: 'pending',
+          price: fd.price || fd.precio || 0,
+          type: s.type || 'rent',
+          maintenanceFee: fd.maintenance_fee || 0,
+          specs: {
+            beds: fd.rooms || fd.recamaras || 0,
+            baths: fd.bathrooms || 0,
+            area: fd.construction_area || 0,
+            landArea: fd.land_area || 0,
+            levels: fd.levels || 1,
+            age: 0
+          },
+          description: fd.description || '',
+          images: [],
+          mainImage: fd.main_image_url || fd.foto_principal,
+          ownerId: s.owner_id,
+          referred_by: s.referred_by,
+          is_submission: true, // Flag for admin actions
+          created_at: s.created_at
+        };
+      });
+
       const mappedInternal: Property[] = (internalData || []).map((p: any) => ({
         ...p,
         ownerId: p.owner_id,
         tenantId: p.tenant_id,
-        mainImage: undefined,
-        images: [],
+        mainImage: p.main_image || p.main_image_url || p.mainImage,
+        images: p.images || [],
         specs: { beds: 0, baths: 0, area: 0, landArea: 0, levels: 1, age: 0 },
         features: [],
         services: [],
@@ -151,7 +218,7 @@ const AppContent: React.FC = () => {
         isInternal: true
       }));
 
-      setProperties([...publicProps, ...mappedInternal]);
+      setProperties([...publicProps, ...mappedInternal, ...mappedSubmissions]);
       setLoadingData(false);
     };
 
@@ -223,9 +290,10 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const isLandingPage = location.pathname.includes('/landing/');
   const isSubmission = location.pathname.startsWith('/vender') || location.pathname.startsWith('/rentar');
+  const isAdvisorProfile = location.pathname.startsWith('/asesor/');
 
   return (
-    <div className={`min-h-screen bg-background-light dark:bg-background-dark ${(isLandingPage || isSubmission) ? '' : 'pb-32 md:pb-0'}`}>
+    <div className={`min-h-screen bg-background-light dark:bg-background-dark ${(isLandingPage || isSubmission || isAdvisorProfile) ? '' : 'pb-32 md:pb-0'}`}>
       <Routes>
         <Route path="/" element={<PublicHome properties={properties} />} />
         <Route path="/listings" element={<PublicListings properties={properties} />} />
@@ -244,9 +312,12 @@ const AppContent: React.FC = () => {
         {/* Landing Pages */}
         <Route path="/landing/renta-tu-propiedad" element={<RentPropertyLanding />} />
 
+        {/* Public Advisor Profile */}
+        <Route path="/asesor/:id" element={<AdvisorFicha />} />
+
         <Route path="/client-portal" element={<ClientPortal />} />
 
-        <Route path="/property/:id" element={<PropertyDetailsWrapper properties={properties} />} />
+        <Route path="/propiedad/:id" element={<PropertyDetailsWrapper properties={properties} />} />
 
         <Route path="/login" element={
           user ? (
@@ -288,7 +359,7 @@ const AppContent: React.FC = () => {
           </ProtectedRoute>
         } />
       </Routes>
-      {(!isLandingPage && !isSubmission) && <Navigation user={user} onLogout={signOut} />}
+      {(!isLandingPage && !isSubmission && !isAdvisorProfile) && <Navigation user={user} onLogout={signOut} />}
     </div>
   );
 };

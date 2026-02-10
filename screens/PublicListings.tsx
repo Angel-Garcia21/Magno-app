@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Property, PropertyStatus } from '../types';
 
 interface PublicListingsProps {
@@ -9,6 +9,8 @@ interface PublicListingsProps {
 
 const PublicListings: React.FC<PublicListingsProps> = ({ properties }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const ref = searchParams.get('ref');
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'sale' | 'rent'>('all');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -37,7 +39,7 @@ const PublicListings: React.FC<PublicListingsProps> = ({ properties }) => {
   });
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 bg-white dark:bg-slate-950">
       <header className={`sticky top-0 z-50 bg-white/95 dark:bg-[#101622]/95 backdrop-blur-md px-4 sm:px-6 md:px-12 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 ${isScrolled ? 'py-3' : 'pt-8 sm:pt-12 pb-6'
         }`}>
         <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'mb-3' : 'mb-6'
@@ -105,7 +107,7 @@ const PublicListings: React.FC<PublicListingsProps> = ({ properties }) => {
         {filtered.map(prop => (
           <div
             key={prop.id}
-            onClick={() => navigate(`/property/${prop.id}`)}
+            onClick={() => navigate(ref ? `/propiedad/${prop.id}?ref=${ref}` : `/propiedad/${prop.id}`)}
             className="group bg-white dark:bg-slate-900 rounded-[3rem] overflow-hidden shadow-soft border border-gray-100 dark:border-gray-800 transition-all hover:shadow-2xl active:scale-[0.98] flex flex-col animate-in fade-in zoom-in-95 duration-500"
           >
             <div className="relative h-60 sm:h-72 flex-shrink-0">

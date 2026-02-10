@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PropertyPreview from '../components/PropertyPreview';
 import { pdf } from '@react-pdf/renderer';
+import { getReferral, getLeadId } from '../utils/referralTracking';
 import RecruitmentPDF from '../components/documents/RecruitmentPDF';
 import KeyReceiptPDF from '../components/documents/KeyReceiptPDF';
 import SignatureCanvas from 'react-signature-canvas';
@@ -110,50 +113,63 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
         if (canvas.width !== width * ratio || canvas.height !== height * ratio) {
             canvas.width = width * ratio;
             canvas.height = height * ratio;
-            canvas.style.width = `${width}px`;
-            canvas.style.height = `${height}px`;
+            canvas.style.width = `${width} px`;
+            canvas.style.height = `${height} px`;
             canvas.getContext("2d")?.scale(ratio, ratio);
             ref.current.clear();
         }
     };
+
+    // Check for resume step from navigation
+    const location = useLocation();
+    const resumeStep = (location.state as any)?.resumeStep;
 
     useEffect(() => {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setUserSession(user);
+                // Only load draft if we have a user
                 const loadDraft = async () => {
                     const { data, error } = await supabase.from('property_submissions')
                         .select('*')
                         .eq('owner_id', user.id)
                         .eq('type', mode)
+                        .in('status', ['draft', 'changes_requested'])
                         .order('created_at', { ascending: false })
                         .limit(1)
                         .maybeSingle();
 
                     if (data && !error) {
-                        const isResumable = ['draft', 'changes_requested'].includes(data.status) || (data.status === 'pending' && !data.is_signed);
-                        if (isResumable) {
-                            setFormData({ ...data.form_data, submission_id: data.id });
+                        setFormData({ ...data.form_data, submission_id: data.id });
 
-                            // If it has unsigned docs, skip to step 9 (Signature)
-                            if (data.form_data.unsigned_recruitment_url) {
-                                setGeneratedDocs([
-                                    { type: 'recruitment', url: data.form_data.unsigned_recruitment_url },
-                                    ...(data.form_data.unsigned_keys_url ? [{ type: 'keys', url: data.form_data.unsigned_keys_url }] : [])
-                                ]);
-                                setStep(9);
-                            } else if (data.status === 'changes_requested') {
-                                setStep(8); // Show preview for feedback cases
-                            }
+                        // Priority 1: Explicit resume step from navigation
+                        if (resumeStep) {
+                            setStep(resumeStep);
+                        }
+                        // Priority 2: Unsigned documents (Step 9)
+                        else if (data.form_data.unsigned_recruitment_url) {
+                            setGeneratedDocs([
+                                { type: 'recruitment', url: data.form_data.unsigned_recruitment_url },
+                                ...(data.form_data.unsigned_keys_url ? [{ type: 'keys', url: data.form_data.unsigned_keys_url }] : [])
+                            ]);
+                            setStep(9);
+                        }
+                        // Priority 3: Changes requested (Step 8)
+                        else if (data.status === 'changes_requested') {
+                            setStep(8);
+                        }
+                        // Priority 4: Saved current step
+                        else if (data.form_data.current_step) {
+                            setStep(data.form_data.current_step);
                         }
                     }
-                };
+                }
                 loadDraft();
-            }
-        };
+            };
+        }
         checkUser();
-    }, [mode]);
+    }, [mode, resumeStep]);
 
     // Fix for Signature Canvas offset/sizing issue
     useEffect(() => {
@@ -187,7 +203,7 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
 
     const uploadFile = async (file: File, path: string) => {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${Math.random()}.${fileExt} `;
         const filePath = `${path}/${fileName}`;
         const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
         if (uploadError) throw uploadError;
@@ -294,7 +310,8 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                 type: mode,
                 status: step === 8 ? 'pending' : 'draft',
                 form_data: formData,
-                is_signed: false
+                is_signed: false,
+                referred_by: getReferral()
             };
             if (formData.submission_id) await supabase.from('property_submissions').update(subData).eq('id', formData.submission_id);
             else {
@@ -316,6 +333,13 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
     // Scroll to top on step change
     useEffect(() => {
         window.scrollTo(0, 0);
+        // Robust Referral Capture: Check URL directly when component mounts
+        const params = new URLSearchParams(window.location.search);
+        const refParam = params.get('ref');
+        if (refParam) {
+            console.log("PropertySubmission: Capturing ref from URL:", refParam);
+            localStorage.setItem('magno_referral', refParam);
+        }
     }, [step]);
 
     const validateCurrentStep = () => {
@@ -383,27 +407,106 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
     const handleNext = async () => {
         if (!validateCurrentStep()) return;
 
-        if (step === 1 && !userSession) {
-            // Guest Flow: Validate input but DO NOT create account yet
-            if (!formData.contact_first_names || !formData.contact_last_names || !formData.contact_email || !formData.contact_phone || !password) {
-                toastError?.('Por favor completa todos los campos y define una contraseña.');
-                return;
-            }
-            if (password.length < 8) {
-                toastError?.('La contraseña debe tener al menos 8 caracteres.');
-                return;
+        try {
+            // STEP 1: Early Sign Up & Draft Creation
+            if (step === 1) {
+                if (!userSession) {
+                    // Guest Flow: Create Account Immediately
+                    if (!formData.contact_first_names || !formData.contact_last_names || !formData.contact_email || !formData.contact_phone || !password) {
+                        toastError?.('Por favor completa todos los campos y define una contraseña.');
+                        return;
+                    }
+
+                    setLoading(true);
+                    // 1. Sign Up
+                    const { data: authData, error: authError } = await supabase.auth.signUp({
+                        email: formData.contact_email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: `${formData.contact_first_names} ${formData.contact_last_names}`,
+                                phone_contact: formData.contact_phone,
+                                nationality: formData.contact_nationality,
+                                home_address: formData.contact_home_address,
+                                role: 'owner'
+                            }
+                        }
+                    });
+
+                    if (authError) throw authError;
+
+                    if (authData.user) {
+                        // 2. Update profile password for admin ref
+                        await supabase.from('profiles').update({ password }).eq('id', authData.user.id);
+
+                        setUserSession(authData.user);
+
+                        // 3. Create Immediate Draft
+                        const subData = {
+                            owner_id: authData.user.id,
+                            type: mode,
+                            status: 'draft',
+                            form_data: formData,
+                            is_signed: false,
+                            referred_by: getReferral()
+                        };
+
+                        const { data: sub, error: subError } = await supabase.from('property_submissions').insert([subData]).select().single();
+                        if (subError) throw subError;
+                        if (sub) setFormData(p => ({ ...p, submission_id: sub.id }));
+
+                        toastSuccess?.('¡Cuenta creada y guardada! Tu progreso está seguro.');
+                    }
+                } else {
+                    // Logged in user: Just save draft if not exists or update
+                    await autoSave();
+                }
+            } else {
+                // All other steps: Auto-Save before moving
+                await autoSave();
             }
 
-            // Just move to next step, validated. Account will be created at final submission.
-            setStep(2);
-        } else if (step < 7) {
-            setStep(step + 1);
-        } else if (step === 7) {
-            setStep(8); // Move from Benefits to Preview
-        } else if (step === 8) {
-            handleSubmit(); // This now prepares for signature (from Preview to Signature)
-        } else {
-            // Step 9 logic handled within components or another function
+            // Move Next
+            if (step < 7) {
+                setStep(step + 1);
+            } else if (step === 7) {
+                setStep(8);
+            } else if (step === 8) {
+                handleSubmit();
+            }
+        } catch (err: any) {
+            console.error(err);
+            toastError?.('Error: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const autoSave = async () => {
+        if (!userSession && !formData.submission_id) return;
+
+        // If we have a session but no submission_id yet (rare but possible if logic failed)
+        // Or if we have a submission_id
+        try {
+            const user = userSession || (await supabase.auth.getUser()).data.user;
+            if (!user) return; // Should not happen if logic is correct
+
+            const subData = {
+                owner_id: user.id,
+                type: mode,
+                status: 'draft',
+                form_data: formData,
+                referred_by: getReferral()
+            };
+
+            if (formData.submission_id) {
+                await supabase.from('property_submissions').update(subData).eq('id', formData.submission_id);
+            } else {
+                const { data: sub } = await supabase.from('property_submissions').insert([subData]).select().single();
+                if (sub) setFormData(p => ({ ...p, submission_id: sub.id }));
+            }
+        } catch (e) {
+            console.error("Auto-save failed", e);
         }
     };
 
@@ -517,7 +620,8 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                 type: mode,
                 status: 'pending',
                 form_data: updatedFormData,
-                is_signed: false
+                is_signed: false,
+                referred_by: getReferral() || new URLSearchParams(window.location.search).get('ref') // Capture advisor referral (Double Check)
             };
 
             if (formData.submission_id) {
@@ -531,6 +635,18 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
             }
 
             setGeneratedDocs(docs);
+
+            // AUTOMATIC LEAD STATUS UPDATE (Robust)
+            const leadId = getLeadId();
+            if (leadId) {
+                // Use RPC to bypass RLS permissions
+                const { error: rpcError } = await supabase.rpc('update_lead_status_secure', {
+                    lead_id: leadId,
+                    new_status: 'published'
+                });
+                if (rpcError) console.error("Error updating lead status:", rpcError);
+            }
+
             toastSuccess?.('Documentación generada exitosamente.');
             setStep(9); // Directly to signature
         } catch (err: any) {
@@ -2192,38 +2308,43 @@ const PropertySubmission: React.FC<PropertySubmissionProps> = ({ mode, onCancel 
                 )
             }
             {/* Exit Confirmation Modal */}
-            {
-                showExitConfirm && (
-                    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 animate-in fade-in duration-300">
-                        <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setShowExitConfirm(false)} />
-                        <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[3rem] p-10 shadow-3xl border border-slate-100 dark:border-white/5 animate-in zoom-in-95 duration-300">
-                            <div className="w-20 h-20 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-[2.5rem] flex items-center justify-center mb-8 mx-auto ring-8 ring-red-500/5">
-                                <span className="material-symbols-outlined text-4xl">warning</span>
+            {showExitConfirm && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span className="material-symbols-outlined text-4xl text-amber-500">warning</span>
                             </div>
-                            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white text-center mb-4 leading-tight">
+                            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-2">
                                 ¿Estás seguro de salir?
                             </h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 text-center font-bold uppercase tracking-[0.2em] mb-10 leading-relaxed px-4">
-                                Si sales ahora, se borrará toda la información que acabas de poner en el formulario para publicar tu propiedad.
+                            <p className="text-sm font-bold text-slate-500 leading-relaxed uppercase tracking-wide">
+                                Si sales ahora, tu propiedad quedará en "Registro en Proceso".
                             </p>
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={confirmExit}
-                                    className="w-full py-5 bg-red-500 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-red-600 hover:scale-[1.02] transition-all"
-                                >
-                                    Sí, estoy de acuerdo con salir
-                                </button>
-                                <button
-                                    onClick={() => setShowExitConfirm(false)}
-                                    className="w-full py-5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-center"
-                                >
-                                    No, quiero continuar
-                                </button>
-                            </div>
+                            <p className="text-xs text-slate-400 mt-2">
+                                Puedes retomar en cualquier momento desde tu panel.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => {
+                                    if (onCancel) onCancel();
+                                    else navigate('/client-portal');
+                                }}
+                                className="px-6 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-500 font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                Salir por ahora
+                            </button>
+                            <button
+                                onClick={() => setShowExitConfirm(false)}
+                                className="px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-glow transition-all"
+                            >
+                                Continuar Registro
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
         </div >
     );
 };

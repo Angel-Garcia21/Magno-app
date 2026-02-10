@@ -139,13 +139,19 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
     };
 
     const fetchUnlinkedProperties = async () => {
-        const { data, error } = await supabase
+        let query = supabase
             .from('properties')
             .select('*')
             .is('owner_id', null)
-            .ilike('title', `%${searchTerm}%`)
+            .eq('status', 'available');
+
+        if (searchTerm.trim()) {
+            query = query.or(`title.ilike.%${searchTerm}%,ref.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+        }
+
+        const { data, error } = await query
             .order('created_at', { ascending: false })
-            .limit(10);
+            .limit(50);
 
         if (error) {
             toastError?.('Error al buscar propiedades');
@@ -223,7 +229,10 @@ const RecruitmentDetailsModal: React.FC<RecruitmentDetailsModalProps> = ({ recru
             // 1. Link Owner to Property
             const { error: propErr } = await supabase
                 .from('properties')
-                .update({ owner_id: recruitment.owner_id })
+                .update({
+                    owner_id: recruitment.owner_id,
+                    referred_by: recruitment.referred_by
+                })
                 .eq('id', propertyId);
 
             if (propErr) throw propErr;

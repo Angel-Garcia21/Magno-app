@@ -146,3 +146,16 @@ select:focus {
 .animate-float {
     animation: float 6s ease-in-out infinite;
 }
+/* Premium Advisor Theme Utilities */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 15s linear infinite;
+}
+
+.glass-premium {
+    @apply backdrop-blur-3xl bg-white/5 border border-white/10 shadow-2xl;
+}

@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { BlogPost, BlogBlock, BlogBlockType } from '../types';
-import { supabase } from '../services/supabaseClient';
+import { BlogPost, BlogBlock, BlogBlockType, User } from '../types';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../services/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { useToast } from '../context/ToastContext';
 
 interface BlogEditorProps {
@@ -9,6 +10,7 @@ interface BlogEditorProps {
     onClose: () => void;
     onSave: (post: Partial<BlogPost>) => void;
     existingPosts: BlogPost[];
+    users: User[];
 }
 
 const TOOLS = [
@@ -25,7 +27,7 @@ const TOOLS = [
     { type: 'external_link', icon: 'link', label: 'Enlace Ext.' },
 ];
 
-const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existingPosts }) => {
+const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existingPosts, users }) => {
     const { success, error } = useToast();
     const [title, setTitle] = useState(post?.title || '');
     const [excerpt, setExcerpt] = useState(post?.excerpt || '');
@@ -35,8 +37,12 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [status, setStatus] = useState<'draft' | 'published'>(post?.status || 'draft');
+    const [authorId, setAuthorId] = useState<string>(post?.author_id || '');
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showPublishModal, setShowPublishModal] = useState(false);
+    const [publishPassword, setPublishPassword] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
     const mainImageRef = useRef<HTMLInputElement>(null);
 
     const addBlock = (type: BlogBlockType) => {
@@ -112,10 +118,17 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
         }
     };
 
-    const handleSave = (isPublished: boolean) => {
+    const handleSave = async (isPublished: boolean) => {
         if (!title) return error('El título es obligatorio');
         if (!mainImage) return error('La imagen principal es obligatoria');
 
+        // If publishing, we ALWAYS want to show the verification modal as per user request
+        if (isPublished) {
+            setShowPublishModal(true);
+            return;
+        }
+
+        // Drafting is simple save
         onSave({
             id: post?.id,
             title,
@@ -123,9 +136,54 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
             category,
             main_image: mainImage,
             content: blocks,
-            status: isPublished ? 'published' : 'draft',
-            slug: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+            status: 'draft',
+            slug: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+            author_id: authorId
         });
+    };
+
+    const handleVerifyAndPublish = async () => {
+        if (!authorId) return error('Selecciona quién publica');
+        if (!publishPassword) return error('Ingresa tu contraseña');
+
+        setIsVerifying(true);
+        try {
+            const selectedUser = users.find(u => u.id === authorId);
+            if (!selectedUser) throw new Error('Usuario no encontrado');
+
+            // Use a secondary client for verification to avoid session-switching the main app
+            const authClient = createClient(supabaseUrl, supabaseAnonKey);
+            const { error: authError } = await authClient.auth.signInWithPassword({
+                email: selectedUser.email,
+                password: publishPassword,
+            });
+
+            if (authError) {
+                error('Contraseña incorrecta. Verificación fallida.');
+                return;
+            }
+
+            // Success! Save as published with the verified author
+            onSave({
+                id: post?.id,
+                title,
+                excerpt,
+                category,
+                main_image: mainImage,
+                content: blocks,
+                status: 'published',
+                slug: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                author_id: authorId
+            });
+
+            success('¡Artículo publicado con éxito!');
+            setShowPublishModal(false);
+            setPublishPassword('');
+        } catch (err: any) {
+            error('Error de verificación: ' + (err.message || 'Error desconocido'));
+        } finally {
+            setIsVerifying(false);
+        }
     };
 
     const handleExit = () => {
@@ -167,6 +225,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
                 </div>
 
                 <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+
                     <button
                         onClick={() => handleSave(false)}
                         className="w-full py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-primary transition-all flex items-center justify-center gap-2"
@@ -286,6 +345,86 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
                     </div>
                 </div>
             </main>
+
+            {/* NEW: Publish Modal with Author Selection & Verification */}
+            {showPublishModal && (
+                <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl animate-in fade-in transition-all">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <div className="p-12 space-y-8">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-3xl font-black uppercase tracking-tighter">¿Quién publica hoy?</h3>
+                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Selecciona tu usuario de equipo y verifica tu acceso</p>
+                                </div>
+                                <button onClick={() => setShowPublishModal(false)} className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                                    {users.filter(u => ['admin', 'asesor', 'marketing'].includes(u.role)).map(u => (
+                                        <button
+                                            key={u.id}
+                                            onClick={() => { setAuthorId(u.id); setPublishPassword(''); }}
+                                            className={`group/card relative p-8 rounded-[2.5rem] border-2 transition-all text-left flex flex-col gap-2 overflow-hidden ${authorId === u.id ? 'bg-primary/5 border-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.1)]' : 'bg-slate-50 dark:bg-slate-950 border-transparent hover:border-slate-200 dark:hover:border-slate-800'}`}
+                                        >
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.25em] ${authorId === u.id ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                                                    {u.role}
+                                                </span>
+                                                {authorId === u.id && <span className="material-symbols-outlined text-primary text-xl animate-in zoom-in">check_circle</span>}
+                                            </div>
+                                            <span className="text-3xl font-black uppercase tracking-tighter line-clamp-1 group-hover/card:text-primary transition-colors leading-none">
+                                                {u.name || (u.email ? u.email.split('@')[0] : 'Sin Nombre')}
+                                            </span>
+                                            <span className="text-[11px] font-bold text-slate-400 lowercase tracking-widest opacity-60">
+                                                {u.email}
+                                            </span>
+
+                                            {/* Decorative Background Icon */}
+                                            <span className="absolute -right-4 -bottom-4 material-symbols-outlined text-[120px] opacity-[0.03] group-hover/card:rotate-12 transition-transform">person</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {authorId && (
+                                    <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-4">
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                                                <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={publishPassword}
+                                                onChange={(e) => setPublishPassword(e.target.value)}
+                                                placeholder="Ingresa tu contraseña para publicar..."
+                                                className="w-full pl-16 pr-6 py-6 bg-slate-50 dark:bg-slate-950 border-none rounded-[1.5rem] font-bold text-lg outline-none ring-2 ring-transparent focus:ring-primary/20 transition-all"
+                                                onKeyDown={(e) => e.key === 'Enter' && handleVerifyAndPublish()}
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={handleVerifyAndPublish}
+                                            disabled={isVerifying || !publishPassword}
+                                            className="w-full py-6 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] shadow-glow hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:hover:scale-100"
+                                        >
+                                            {isVerifying ? (
+                                                <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <span className="material-symbols-outlined font-black">verified_user</span>
+                                                    Verificar y Publicar Articulo
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 
