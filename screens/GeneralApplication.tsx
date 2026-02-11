@@ -102,7 +102,7 @@ const GeneralApplication: React.FC = () => {
                 email: appData.email,
                 knows_area: appData.knowsArea,
                 reason: appData.reason,
-                appointment_date: appData.appointmentDate,
+                appointment_date: appData.appointmentDate || null,
                 appointment_time: appData.appointmentTime,
                 status: 'pending',
                 application_type: type,
@@ -120,7 +120,7 @@ const GeneralApplication: React.FC = () => {
                 meets_ratio: appData.meetsRatio,
                 bureau_status: appData.bureauStatus,
                 accepted_requirements: appData.acceptedRequirements,
-                move_in_date: appData.moveInDate
+                move_in_date: appData.moveInDate || null
             };
 
             const saleData = {
