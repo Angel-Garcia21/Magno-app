@@ -42,6 +42,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [publishPassword, setPublishPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const mainImageRef = useRef<HTMLInputElement>(null);
 
@@ -152,7 +153,13 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
             if (!selectedUser) throw new Error('Usuario no encontrado');
 
             // Use a secondary client for verification to avoid session-switching the main app
-            const authClient = createClient(supabaseUrl, supabaseAnonKey);
+            const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+                auth: {
+                    persistSession: false,
+                    autoRefreshToken: false,
+                    detectSessionInUrl: false
+                }
+            });
             const { error: authError } = await authClient.auth.signInWithPassword({
                 email: selectedUser.email,
                 password: publishPassword,
@@ -395,13 +402,22 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
                                                 <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
                                             </div>
                                             <input
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 value={publishPassword}
                                                 onChange={(e) => setPublishPassword(e.target.value)}
                                                 placeholder="Ingresa tu contraseña para publicar..."
-                                                className="w-full pl-16 pr-6 py-6 bg-slate-50 dark:bg-slate-950 border-none rounded-[1.5rem] font-bold text-lg outline-none ring-2 ring-transparent focus:ring-primary/20 transition-all"
+                                                className="w-full pl-16 pr-16 py-6 bg-slate-50 dark:bg-slate-950 border-none rounded-[1.5rem] font-bold text-lg outline-none ring-2 ring-transparent focus:ring-primary/20 transition-all"
                                                 onKeyDown={(e) => e.key === 'Enter' && handleVerifyAndPublish()}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute inset-y-0 right-0 pr-6 flex items-center text-slate-400 hover:text-primary transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">
+                                                    {showPassword ? 'visibility_off' : 'visibility'}
+                                                </span>
+                                            </button>
                                         </div>
 
                                         <button

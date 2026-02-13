@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 
 const RentContentIntegrated: React.FC = () => {
     const navigate = useNavigate();
@@ -230,8 +231,17 @@ const RentContentIntegrated: React.FC = () => {
                     {`
                         .reveal-on-scroll .step-item {
                             opacity: 0;
-                            transform: translateX(var(--deploy-x, 0)) translateY(20px) scale(0.8);
                             transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+                        }
+                        @media (min-width: 768px) {
+                            .reveal-on-scroll .step-item {
+                                transform: translateX(var(--deploy-x, 0)) translateY(20px) scale(0.8);
+                            }
+                        }
+                        @media (max-width: 767px) {
+                            .reveal-on-scroll .step-item {
+                                transform: translateY(20px) scale(0.8);
+                            }
                         }
                         .reveal-on-scroll.reveal-active .step-item {
                             opacity: 1;
@@ -264,7 +274,7 @@ const RentContentIntegrated: React.FC = () => {
 
                     `}
                 </style>
-                <div className="text-center mb-24 reveal-on-scroll">
+                <div className="text-center mb-16 md:mb-24 reveal-on-scroll relative z-20">
                     <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">
                         Proceso <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#b4975a] to-amber-200">Sencillo</span>
                     </h2>
@@ -272,7 +282,7 @@ const RentContentIntegrated: React.FC = () => {
                 </div>
 
                 <div className="max-w-6xl mx-auto">
-                    <div className="flex flex-col md:flex-row items-start justify-center gap-12 md:gap-0 relative">
+                    <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-12 md:gap-0 relative">
                         {/* Connecting Line (Desktop/Mobile) */}
                         <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-[#b4975a]/30 to-transparent"></div>
                         <div className="md:hidden absolute left-1/2 -translate-x-1/2 top-10 bottom-10 w-[1px] bg-gradient-to-b from-transparent via-[#b4975a]/20 to-transparent z-0"></div>
@@ -294,7 +304,7 @@ const RentContentIntegrated: React.FC = () => {
                                 >
                                     {/* Apple-Style Floating Detail Cloud */}
                                     {activeStep?.title === step.title && (
-                                        <div className="fixed md:absolute inset-x-4 top-[20%] md:top-auto md:bottom-[calc(100%+40px)] md:left-1/2 md:inset-x-auto md:-translate-x-1/2 z-[100] w-auto md:w-96 detail-cloud-enter pointer-events-auto">
+                                        <div className="hidden md:block absolute bottom-[calc(100%+40px)] left-1/2 -translate-x-1/2 z-[100] w-96 detail-cloud-enter pointer-events-auto">
                                             <div className="bg-slate-900/98 backdrop-blur-3xl border border-[#b4975a]/40 rounded-[3rem] p-8 md:p-10 shadow-[0_40px_100px_rgba(0,0,0,0.95)] relative group/cloud animate-float-premium">
                                                 {/* Sophisticated Glossy Texture */}
                                                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30 rounded-[3rem]"></div>
@@ -329,7 +339,7 @@ const RentContentIntegrated: React.FC = () => {
                                     )}
 
                                     {/* Step Circle - Integrated Visuals - REDUCED SIZE ON MOBILE */}
-                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-slate-950 border border-[#b4975a]/20 flex items-center justify-center mb-6 md:mb-10 group-hover:border-[#b4975a] transition-all duration-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_100px_rgba(180,151,90,0.4)] relative transform group-hover:scale-110 active:scale-95">
+                                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-full bg-slate-950 border border-[#b4975a]/20 flex items-center justify-center mb-6 md:mb-10 group-hover:border-[#b4975a] transition-all duration-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_100px_rgba(180,151,90,0.4)] relative transform group-hover:scale-110 active:scale-95">
                                         {/* Subtle Glow Ring */}
                                         <div className="absolute inset-0 bg-gradient-to-br from-[#b4975a]/10 to-transparent rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
@@ -357,6 +367,27 @@ const RentContentIntegrated: React.FC = () => {
                             );
                         })}
                     </div>
+
+
+
+                    {/* Mobile Detail Modal (Global Position via Portal) */}
+                    {activeStep && createPortal(
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md md:hidden animate-in fade-in duration-200" onClick={() => setActiveStep(null)}>
+                            <div className="bg-slate-900/90 backdrop-blur-3xl border border-[#b4975a]/40 rounded-[2.5rem] p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative w-full max-w-sm animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setActiveStep(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 transition-colors">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#b4975a]/20 to-[#b4975a]/5 flex items-center justify-center border border-[#b4975a]/30 shadow-lg mb-6">
+                                        <span className="material-symbols-outlined text-[#b4975a] text-3xl">{activeStep.icon}</span>
+                                    </div>
+                                    <h3 className="text-white font-black uppercase text-lg tracking-widest mb-4">{activeStep.title}</h3>
+                                    <p className="text-slate-300 text-sm leading-relaxed font-medium">{activeStep.details}</p>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
 
                     {/* Zero Cost Banner - Masterpiece Redesign */}
                     <div className="mt-40 p-12 md:p-24 rounded-[5rem] bg-gradient-to-br from-blue-600/10 via-slate-900/40 to-black/40 border-2 border-blue-500/10 backdrop-blur-3xl relative overflow-hidden group shadow-[0_40px_100px_rgba(0,0,0,0.6)]">

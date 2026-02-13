@@ -16,6 +16,7 @@ const AdvisorFicha: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [advisorPosts, setAdvisorPosts] = useState<BlogPost[]>([]);
     const [availableProperties, setAvailableProperties] = useState<Property[]>([]);
+    const blogCarouselRef = useRef<HTMLDivElement>(null);
 
 
     const portalsLogos = [
@@ -364,8 +365,8 @@ const AdvisorFicha: React.FC = () => {
                             <div className="flex flex-col gap-4">
                                 <button
                                     onClick={() => {
-                                        const phone = advisorUser.phone?.replace(/\D/g, '');
-                                        const message = encodeURIComponent("Hola, me interesa saber más sobre tus servicios inmobiliarios.");
+                                        const phone = "3951150027";
+                                        const message = encodeURIComponent("¡Hola! Llegue a tu landing page y estoy muy interesado en rentar mi propiedad con ustedes. Quisiera mas informacion");
                                         window.open(`https://wa.me/52${phone}?text=${message}`, '_blank');
                                     }}
                                     className="bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 backdrop-blur-md rounded-3xl p-5 flex items-center justify-between group transition-all hover:scale-[1.02] mb-4"
@@ -377,44 +378,81 @@ const AdvisorFicha: React.FC = () => {
                                     <span className="material-symbols-outlined text-2xl text-green-400 group-hover:rotate-12 transition-transform">chat</span>
                                 </button>
 
-                                <div className="bg-slate-800/50 backdrop-blur-md rounded-3xl p-5 border border-white/5 flex items-center justify-center text-slate-500">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-center">Más opciones próximamente</p>
-                                </div>
+
                             </div>
                         </div>
 
                         {/* Recent Blogs */}
                         {advisorPosts.length > 0 && (
-                            <div className="w-full max-w-6xl mx-auto pt-20 border-t border-white/5 mt-20">
+                            <div className="w-full max-w-7xl mx-auto pt-20 border-t border-white/5 mt-20">
                                 <div className="text-center mb-12">
                                     <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-4">Artículos Publicados</h2>
                                     <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Contenido exclusivo creado por {advisorUser.name}</p>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {advisorPosts.map(post => (
-                                        <div
-                                            key={post.id}
-                                            onClick={() => navigate(`/blog/${post.slug}`)}
-                                            className="group relative bg-[#0a0a0a] rounded-[2rem] overflow-hidden border border-white/10 hover:border-[#b4975a]/50 transition-all duration-500 hover:-translate-y-2"
-                                        >
-                                            <div className="aspect-[4/3] overflow-hidden relative">
-                                                <img src={post.main_image} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                                                <div className="absolute bottom-4 left-4">
-                                                    <span className="px-3 py-1 bg-[#b4975a] text-black text-[8px] font-black uppercase tracking-widest rounded-full">{post.category || 'Blog'}</span>
+
+                                {/* Horizontal Carousel Container */}
+                                <div className="relative group/carousel">
+                                    {/* Navigation Buttons */}
+                                    {advisorPosts.length > 3 && (
+                                        <>
+                                            <button
+                                                onClick={() => {
+                                                    if (blogCarouselRef.current) {
+                                                        blogCarouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+                                                    }
+                                                }}
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-16 md:h-16 bg-[#b4975a]/90 hover:bg-[#b4975a] text-black rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 -translate-x-1/2"
+                                            >
+                                                <span className="material-symbols-outlined text-2xl md:text-3xl font-black">chevron_left</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (blogCarouselRef.current) {
+                                                        blogCarouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+                                                    }
+                                                }}
+                                                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-16 md:h-16 bg-[#b4975a]/90 hover:bg-[#b4975a] text-black rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 translate-x-1/2"
+                                            >
+                                                <span className="material-symbols-outlined text-2xl md:text-3xl font-black">chevron_right</span>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Scrollable Container */}
+                                    <div
+                                        ref={blogCarouselRef}
+                                        className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pb-4"
+                                        style={{
+                                            scrollbarWidth: 'none',
+                                            msOverflowStyle: 'none',
+                                        }}
+                                    >
+                                        {advisorPosts.map(post => (
+                                            <div
+                                                key={post.id}
+                                                onClick={() => navigate(`/blog/${post.slug}`)}
+                                                className="group relative bg-[#0a0a0a] rounded-[2rem] overflow-hidden border border-white/10 hover:border-[#b4975a]/50 transition-all duration-500 hover:-translate-y-2 cursor-pointer flex-shrink-0 snap-start"
+                                                style={{ width: 'calc(33.333% - 16px)', minWidth: '300px' }}
+                                            >
+                                                <div className="aspect-[4/3] overflow-hidden relative">
+                                                    <img src={post.main_image} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                                                    <div className="absolute bottom-4 left-4">
+                                                        <span className="px-3 py-1 bg-[#b4975a] text-black text-[8px] font-black uppercase tracking-widest rounded-full">{post.category || 'Blog'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="p-8">
+                                                    <h3 className="text-xl font-black uppercase leading-tight text-white mb-4 group-hover:text-[#b4975a] transition-colors line-clamp-2">
+                                                        {post.title}
+                                                    </h3>
+                                                    <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/5">
+                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</span>
+                                                        <span className="material-symbols-outlined text-[#b4975a] group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="p-8">
-                                                <h3 className="text-xl font-black uppercase leading-tight text-white mb-4 group-hover:text-[#b4975a] transition-colors line-clamp-2">
-                                                    {post.title}
-                                                </h3>
-                                                <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/5">
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(post.created_at).toLocaleDateString()}</span>
-                                                    <span className="material-symbols-outlined text-[#b4975a] group-hover:translate-x-2 transition-transform">arrow_forward</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
