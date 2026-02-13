@@ -46,6 +46,16 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onClose, onSave, existing
     const [isVerifying, setIsVerifying] = useState(false);
     const mainImageRef = useRef<HTMLInputElement>(null);
 
+    // Debug: Track component mounting
+    useEffect(() => {
+        console.log('🟢 [BLOG EDITOR] Componente montado');
+        console.log('🟢 [BLOG EDITOR] Post recibido:', post);
+        console.log('🟢 [BLOG EDITOR] Users disponibles:', users?.length);
+        return () => {
+            console.log('🔴 [BLOG EDITOR] Componente desmontado');
+        };
+    }, []);
+
     const addBlock = (type: BlogBlockType) => {
         let content: any = '';
         if (type === 'list') content = { items: [''], type: 'bullet' };

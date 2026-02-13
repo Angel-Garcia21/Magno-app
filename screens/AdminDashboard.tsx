@@ -548,7 +548,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
       asesorService.getAdvisorProfile(currentUser.id).then(setAdvisorProfile);
     }
     if ((currentUserRole === 'admin' || currentUserRole === 'asesor' || currentUserRole === 'marketing') &&
-      (activeTab === 'rental-apps' || activeTab === 'team' || activeTab === 'appointments' || activeTab === 'leads' || activeTab === 'advisor-properties' || activeTab === 'advisors')) {
+      (activeTab === 'rental-apps' || activeTab === 'team' || activeTab === 'appointments' || activeTab === 'leads' || activeTab === 'advisor-properties' || activeTab === 'advisors' || activeTab === 'blog')) {
       fetchAdvisorProfiles();
 
       // Fallback: If for some reason the prop users is empty, fetch them here too (staff only)
@@ -6673,8 +6673,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                 </div>
                 <button
                   onClick={() => {
+                    console.log('🔵 [BLOG BUTTON] Click detectado');
+                    console.log('🔵 [BLOG BUTTON] Estado actual showBlogEditor:', showBlogEditor);
                     setEditingBlogPost(null);
+                    console.log('🔵 [BLOG BUTTON] editingBlogPost reseteado a null');
                     setShowBlogEditor(true);
+                    console.log('🔵 [BLOG BUTTON] showBlogEditor cambiado a TRUE');
                   }}
                   className="w-16 h-16 bg-slate-950 text-white rounded-2xl flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all group shrink-0"
                   title="Crear nueva noticia"
@@ -9867,18 +9871,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
                     }
 
                     {
-                      showBlogEditor && (
-                        <BlogEditor
-                          post={editingBlogPost}
-                          onClose={() => {
-                            setShowBlogEditor(false);
-                            setEditingBlogPost(null);
-                          }}
-                          onSave={onSaveBlog}
-                          existingPosts={blogPosts}
-                          users={users}
-                        />
-                      )
+
                     }
                     {/* Approval Progress Modal */}
                     {
@@ -10621,6 +10614,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ properties, onPropertyU
 
 
       </main >
+      {/* Blog Editor Modal - Moved outside main for z-index safety */}
+      {(() => {
+        console.log('🟡 [RENDER CHECK] showBlogEditor:', showBlogEditor);
+        return showBlogEditor;
+      })() && (
+          <BlogEditor
+            post={editingBlogPost}
+            onClose={() => {
+              setShowBlogEditor(false);
+              setEditingBlogPost(null);
+            }}
+            onSave={onSaveBlog}
+            existingPosts={blogPosts}
+            users={users}
+          />
+        )}
     </div >
   );
 };
